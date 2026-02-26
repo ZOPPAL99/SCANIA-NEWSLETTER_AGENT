@@ -1,0 +1,49 @@
+{
+  "meta": {
+    "title": "Scania Weekly Intelligence",
+    "preheader": "A concise briefing with highlights and links.",
+    "edition": "Edition 2026-02-25",
+    "dateISO": "2026-02-25"
+  },
+  "sections": [
+    {
+      "id": "top-stories",
+      "title": "Fleet Innovation",
+      "blocks": [
+        {
+          "type": "heading",
+          "level": 1,
+          "text": "Scania Weekly Intelligence"
+        },
+        {
+          "type": "paragraph",
+          "text": "A deterministic sample newsletter used for schema and renderer checks."
+        },
+        {
+          "type": "image",
+          "src": "https://picsum.photos/seed/newsletter/1200/640",
+          "alt": "Abstract editorial illustration",
+          "caption": "Lead visual used for layout verification."
+        },
+        {
+          "type": "links",
+          "items": [
+            {
+              "text": "Read the full analysis",
+              "url": "https://example.com/analysis"
+            },
+            {
+              "text": "See the data notes",
+              "url": "https://example.com/data-notes"
+            }
+          ]
+        },
+        {
+          "type": "cta",
+          "text": "Open full briefing",
+          "url": "https://example.com/briefing"
+        }
+      ]
+    }
+  ]
+}
