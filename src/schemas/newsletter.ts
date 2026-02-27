@@ -1,100 +1,126 @@
 import { z } from "zod";
 
-export const LinkItemSchema = z
+export const imageSchema = z
   .object({
-    text: z.string().min(1),
-    url: z.string().url()
-  })
-  .strict();
-
-export const HeadingBlockSchema = z
-  .object({
-    type: z.literal("heading"),
-    level: z.union([z.literal(1), z.literal(2), z.literal(3)]),
-    text: z.string().min(1)
-  })
-  .strict();
-
-export const ParagraphBlockSchema = z
-  .object({
-    type: z.literal("paragraph"),
-    text: z.string().min(1)
-  })
-  .strict();
-
-export const ImageBlockSchema = z
-  .object({
-    type: z.literal("image"),
     src: z.string().url(),
     alt: z.string().min(1),
     caption: z.string().optional(),
-    link: z.string().url().optional()
   })
   .strict();
 
-export const LinksBlockSchema = z
+export const ctaSchema = z
   .object({
-    type: z.literal("links"),
-    items: z.array(LinkItemSchema).min(1)
+    label: z.string().min(1),
+    href: z.string().url(),
   })
   .strict();
 
-export const CtaBlockSchema = z
+export const releaseMediaSchema = z
+  .object({
+    src: z.string().url(),
+    alt: z.string().min(1),
+  })
+  .strict();
+
+export const releaseItemSchema = z
+  .object({
+    number: z.number().int().positive(),
+    title: z.string().min(1),
+    kicker: z.string().min(1),
+    body: z.string().min(1),
+    media: z.array(releaseMediaSchema).optional(),
+  })
+  .strict();
+
+const heroBlockSchema = z
+  .object({
+    type: z.literal("hero"),
+    title: z.string().min(1),
+    body: z.string().optional(),
+    images: z.array(imageSchema).optional(),
+    ctas: z.array(ctaSchema).optional(),
+  })
+  .strict();
+
+const textBlockSchema = z
+  .object({
+    type: z.literal("text"),
+    title: z.string().optional(),
+    body: z.string().optional(),
+    images: z.array(imageSchema).optional(),
+    ctas: z.array(ctaSchema).optional(),
+  })
+  .strict();
+
+const cardsBlockSchema = z
+  .object({
+    type: z.literal("cards"),
+    title: z.string().optional(),
+    body: z.string().optional(),
+    images: z.array(imageSchema).optional(),
+    ctas: z.array(ctaSchema).optional(),
+    items: z.array(z.unknown()).optional(),
+  })
+  .strict();
+
+const ctaBlockSchema = z
   .object({
     type: z.literal("cta"),
-    text: z.string().min(1),
-    url: z.string().url()
+    title: z.string().optional(),
+    body: z.string().optional(),
+    ctas: z.array(ctaSchema).optional(),
   })
   .strict();
 
-export const DividerBlockSchema = z
+const footerBlockSchema = z
   .object({
-    type: z.literal("divider")
+    type: z.literal("footer"),
+    body: z.string().optional(),
   })
   .strict();
 
-export const NewsletterBlockSchema = z.discriminatedUnion("type", [
-  HeadingBlockSchema,
-  ParagraphBlockSchema,
-  ImageBlockSchema,
-  LinksBlockSchema,
-  CtaBlockSchema,
-  DividerBlockSchema
+const releaseSectionBlockSchema = z
+  .object({
+    type: z.literal("releaseSection"),
+    title: z.string().min(1),
+    disclaimer: z.string().min(1),
+    items: z.array(releaseItemSchema).min(1),
+  })
+  .strict();
+
+export const blockSchema = z.discriminatedUnion("type", [
+  heroBlockSchema,
+  textBlockSchema,
+  cardsBlockSchema,
+  ctaBlockSchema,
+  footerBlockSchema,
+  releaseSectionBlockSchema,
 ]);
 
-export const NewsletterSectionSchema = z
+export const newsletterSchema = z
   .object({
-    id: z.string().min(1),
-    title: z.string().min(1),
-    blocks: z.array(NewsletterBlockSchema).min(1)
-  })
-  .strict();
-
-export const NewsletterSchema = z
-  .object({
+    id: z.string().optional(),
+    subject: z.string().min(1),
+    preheader: z.string().optional(),
+    blocks: z.array(blockSchema),
     meta: z
       .object({
-        title: z.string().min(1),
-        preheader: z.string().min(1),
-        edition: z.string().min(1),
-        dateISO: z.string().date()
+        audience: z.string().optional(),
+        language: z.string().default("en"),
       })
-      .strict(),
-    sections: z.array(NewsletterSectionSchema).min(1)
+      .strict()
+      .optional(),
   })
   .strict();
 
-export type LinkItem = z.infer<typeof LinkItemSchema>;
-export type HeadingBlock = z.infer<typeof HeadingBlockSchema>;
-export type ParagraphBlock = z.infer<typeof ParagraphBlockSchema>;
-export type ImageBlock = z.infer<typeof ImageBlockSchema>;
-export type LinksBlock = z.infer<typeof LinksBlockSchema>;
-export type CtaBlock = z.infer<typeof CtaBlockSchema>;
-export type DividerBlock = z.infer<typeof DividerBlockSchema>;
-export type NewsletterBlock = z.infer<typeof NewsletterBlockSchema>;
-export type NewsletterSection = z.infer<typeof NewsletterSectionSchema>;
-export type Newsletter = z.infer<typeof NewsletterSchema>;
+export type Image = z.infer<typeof imageSchema>;
+export type Cta = z.infer<typeof ctaSchema>;
+export type ReleaseItem = z.infer<typeof releaseItemSchema>;
+export type Block = z.infer<typeof blockSchema>;
+export type Newsletter = z.infer<typeof newsletterSchema>;
+
+export const NewsletterSchema = newsletterSchema;
 
 export function validateNewsletter(input: unknown): Newsletter {
-  return NewsletterSchema.parse(input);
+  return newsletterSchema.parse(input);
 }

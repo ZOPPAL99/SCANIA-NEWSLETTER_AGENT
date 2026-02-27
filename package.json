@@ -5,25 +5,29 @@
   "description": "Schema-first newsletter creation agent with deterministic renderers and QA checks.",
   "type": "module",
   "scripts": {
-    "generate": "tsx src/cli/generate.ts",
-    "test": "vitest run",
-    "test:watch": "vitest",
-    "typecheck": "tsc --noEmit"
+    "build": "tsc -b",
+    "typecheck": "tsc --noEmit",
+    "test": "vitest",
+    "generate": "node ./dist/cli/generate.js",
+    "preview": "node ./dist/cli/preview.js",
+    "lint": "eslint . --ext .ts,.tsx"
   },
   "engines": {
     "node": ">=20.0.0"
   },
   "dependencies": {
     "react": "^18.3.1",
-    "react-dom": "^18.3.1",
-    "zod": "^3.23.8"
+    "react-dom": "^18.3.1"
   },
   "devDependencies": {
     "@types/node": "^22.10.2",
     "@types/react": "^18.3.12",
     "@types/react-dom": "^18.3.1",
+    "eslint": "^10.0.2",
+    "prettier": "^3.8.1",
     "tsx": "^4.19.2",
-    "typescript": "^5.6.3",
-    "vitest": "^2.1.8"
+    "typescript": "^5.9.3",
+    "vitest": "^2.1.9",
+    "zod": "^4.3.6"
   }
 }

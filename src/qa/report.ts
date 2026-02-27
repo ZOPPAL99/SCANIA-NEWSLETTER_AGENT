@@ -5,9 +5,9 @@ export function renderQaReport(newsletter: Newsletter, qa: QAResult): string {
   const lines: string[] = [];
   lines.push("# QA Report");
   lines.push("");
-  lines.push(`- Title: ${newsletter.meta.title}`);
-  lines.push(`- Edition: ${newsletter.meta.edition}`);
-  lines.push(`- Date: ${newsletter.meta.dateISO}`);
+  lines.push(`- Subject: ${newsletter.subject}`);
+  lines.push(`- Language: ${newsletter.meta?.language ?? "en"}`);
+  lines.push(`- Audience: ${newsletter.meta?.audience ?? "general"}`);
   lines.push(`- Status: ${qa.ok ? "PASS" : "FAIL"}`);
   lines.push(`- Total Issues: ${qa.issues.length}`);
   lines.push("");

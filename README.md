@@ -7,16 +7,14 @@ Schema-first newsletter generation with deterministic renderers and QA checks.
 - Strict JSON newsletter schema via Zod (`.strict()` objects).
 - Deterministic renderers:
   - Email HTML renderer (table-based, inline styles).
-  - Web preview renderer (React SSR) with placeholder Tegel-like tokens in `src/render/web/tokens.ts`.
+  - Web preview renderer (React SSR) with Tegel-aligned spacing/typography tokens in `src/render/web/tokens.ts`.
+  - Shared Scania brand theme and assets in `src/render/brand/theme.ts`.
 - QA/validation pipeline:
-  - JSON schema validation.
-  - Heading order check.
-  - Image alt text check.
-  - Link text presence check.
-  - CTA presence check.
-  - Max line length check for paragraph blocks.
-  - Markdown QA output (`qa-report.md`).
-- Mock mode by default, plus an OpenAI API stub for future integration.
+  - Schema validation (`safeParse`) via `src/schemas/newsletter.schema.ts`.
+  - Business-rule QA checks via `src/qa/checkNewsletter.ts` and `src/qa/validators.ts`.
+  - Markdown QA output (`qa-report.md`) with stable issue codes and pointers.
+  - CLI exits non-zero on schema errors or QA error-level findings.
+- Mock mode by default, plus `--use-api` mode (JSON-only model output, validated and retried once if invalid).
 
 ## Project Structure
 
@@ -55,17 +53,20 @@ Generated files:
 - `dist/email.html`
 - `dist/preview.html`
 - `dist/qa-report.md`
+- `dist/assets/fonts/latin/ScaniaSans-Regular.woff`
+- `dist/assets/fonts/latin/ScaniaSans-Bold.woff`
+- `dist/assets/scania-logotype.svg`
 
-Optional mode (currently stubbed and throws):
+Optional API mode:
 
 ```powershell
-npm.cmd run generate -- --mode openai --input examples/input.md --out dist
+npm.cmd run generate -- --use-api --input examples/input.md --out dist
 ```
 
 ## Tests
 
 ```powershell
-npm.cmd test
+npm.cmd test -- --run
 ```
 
 Typecheck:
@@ -77,4 +78,7 @@ npm.cmd run typecheck
 ## Notes
 
 - The model output contract is strict JSON only; HTML is produced only by deterministic renderers.
-- `examples/sample-newsletter.json` and `examples/expected-email.html` provide baseline fixtures for manual inspection.
+- Golden expected artifacts are committed under `examples/expected/`:
+  - `examples/expected/newsletter.json`
+  - `examples/expected/email.html`
+  - `examples/expected/preview.html`

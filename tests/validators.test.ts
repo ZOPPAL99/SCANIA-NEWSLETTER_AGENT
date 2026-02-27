@@ -1,30 +1,28 @@
 import { describe, expect, it } from "vitest";
 import { runQaChecks } from "../src/qa/validators.js";
+import { renderEmailHtml } from "../src/render/email/renderer.js";
+import { renderPreviewHtml } from "../src/render/web/renderer.js";
 import type { Newsletter } from "../src/schemas/newsletter.js";
 
 function baseNewsletter(): Newsletter {
   return {
-    meta: {
-      title: "QA",
-      preheader: "Checks",
-      edition: "Edition 2026-02-25",
-      dateISO: "2026-02-25",
-    },
-    sections: [
+    subject: "QA",
+    preheader: "Checks",
+    meta: { language: "en", audience: "general" },
+    blocks: [
       {
-        id: "s1",
-        title: "Section",
-        blocks: [
-          { type: "heading", level: 1, text: "Top" },
-          { type: "paragraph", text: "Short paragraph." },
-          {
-            type: "links",
-            items: [{ text: "Valid link", url: "https://example.com" }],
-          },
-          { type: "cta", text: "Go", url: "https://example.com/go" },
-        ],
+        type: "hero",
+        title: "Top",
+        body: "Short paragraph.",
+        images: [{ src: "https://example.com/hero.jpg", alt: "Hero image" }],
+        ctas: [{ label: "Go", href: "https://example.com/go" }]
       },
-    ],
+      {
+        type: "cards",
+        title: "Highlights",
+        items: [{ title: "Valid link", href: "https://example.com" }]
+      }
+    ]
   };
 }
 
@@ -37,31 +35,27 @@ describe("runQaChecks", () => {
 
   it("fails when CTA is missing", () => {
     const data = baseNewsletter();
-    data.sections[0].blocks = data.sections[0].blocks.filter(
-      (b) => b.type !== "cta",
-    );
+    data.blocks[0].ctas = [];
     const qa = runQaChecks(data);
     expect(qa.ok).toBe(false);
     expect(qa.issues.some((i) => i.code === "CTA_MISSING")).toBe(true);
   });
 
-  it("warns when paragraph line exceeds max length", () => {
+  it("warns when body line exceeds max length", () => {
     const data = baseNewsletter();
-    data.sections[0].blocks[1] = {
-      type: "paragraph",
-      text: "x".repeat(121),
-    };
+    data.blocks[0].body = "x".repeat(121);
     const qa = runQaChecks(data);
     expect(qa.issues.some((i) => i.code === "BODY_LINE_LENGTH")).toBe(true);
   });
 
   it("fails when CTA is not verb-first or too long", () => {
     const data = baseNewsletter();
-    data.sections[0].blocks[3] = {
-      type: "cta",
-      text: "The best newsletter offer right now",
-      url: "https://example.com/go",
-    };
+    data.blocks[0].ctas = [
+      {
+        label: "The best newsletter offer right now",
+        href: "https://example.com/go"
+      }
+    ];
     const qa = runQaChecks(data);
     expect(qa.issues.some((i) => i.code === "CTA_VERB_FIRST")).toBe(true);
     expect(qa.issues.some((i) => i.code === "CTA_TEXT_LENGTH")).toBe(true);
@@ -69,38 +63,28 @@ describe("runQaChecks", () => {
 
   it("fails when hero and feature-card counts exceed limits", () => {
     const data = baseNewsletter();
-    data.sections[0].blocks.splice(2, 0, {
-      type: "image",
-      src: "https://example.com/hero-1.png",
-      alt: "hero 1",
+    data.blocks.push({
+      type: "hero",
+      title: "Another hero"
     });
-    data.sections[0].blocks.splice(3, 0, {
-      type: "image",
-      src: "https://example.com/hero-2.png",
-      alt: "hero 2",
-    });
-    data.sections[0].blocks[4] = {
-      type: "links",
+    data.blocks[1] = {
+      type: "cards",
+      title: "Too many cards",
       items: [
-        { text: "Card 1", url: "https://example.com/1" },
-        { text: "Card 2", url: "https://example.com/2" },
-        { text: "Card 3", url: "https://example.com/3" },
-        { text: "Card 4", url: "https://example.com/4" },
-      ],
+        { title: "Card 1", href: "https://example.com/1" },
+        { title: "Card 2", href: "https://example.com/2" },
+        { title: "Card 3", href: "https://example.com/3" },
+        { title: "Card 4", href: "https://example.com/4" }
+      ]
     };
     const qa = runQaChecks(data);
     expect(qa.issues.some((i) => i.code === "HERO_LIMIT")).toBe(true);
     expect(qa.issues.some((i) => i.code === "FEATURE_CARD_LIMIT")).toBe(true);
   });
 
-  it("fails when heading structure has no H1 or skips levels", () => {
+  it("fails when heading structure has no H1", () => {
     const data = baseNewsletter();
-    data.sections[0].blocks[0] = { type: "heading", level: 2, text: "Subhead" };
-    data.sections[0].blocks.splice(1, 0, {
-      type: "heading",
-      level: 3,
-      text: "Detail",
-    });
+    data.blocks[0] = { type: "text", title: "Subhead", body: "Body" };
     const qa = runQaChecks(data);
     expect(qa.issues.some((i) => i.code === "HEADING_ORDER")).toBe(true);
   });
@@ -110,12 +94,61 @@ describe("runQaChecks", () => {
     const qa = runQaChecks(data, {
       emailHtml:
         '<td style="padding:10px 24px;font-size:15px;">x</td><h1 style="font-size:22px;">h</h1>',
-      previewHtml: "h2 { font-size:20px; } p { font-size:13px; margin:10px; }",
+      previewHtml: "h2 { font-size:20px; } p { font-size:13px; margin:10px; }"
     });
     expect(qa.issues.some((i) => i.code === "TEGEL_SPACING_TOKENS")).toBe(true);
     expect(qa.issues.some((i) => i.code === "TEGEL_BODY_TEXT_SIZE")).toBe(true);
-    expect(qa.issues.some((i) => i.code === "TEGEL_HEADING_TEXT_SIZE")).toBe(
-      true,
-    );
+    expect(qa.issues.some((i) => i.code === "TEGEL_HEADING_TEXT_SIZE")).toBe(true);
+  });
+
+  it("passes style and branding checks for generated renderer artifacts", () => {
+    const data = baseNewsletter();
+    const qa = runQaChecks(data, {
+      emailHtml: renderEmailHtml(data),
+      previewHtml: renderPreviewHtml(data)
+    });
+    expect(qa.issues.some((i) => i.code === "TEGEL_SPACING_TOKENS")).toBe(false);
+    expect(qa.issues.some((i) => i.code === "TEGEL_BODY_TEXT_SIZE")).toBe(false);
+    expect(qa.issues.some((i) => i.code === "TEGEL_HEADING_TEXT_SIZE")).toBe(false);
+    expect(qa.issues.some((i) => i.code === "BRANDING_LOGO_MISSING")).toBe(false);
+  });
+
+  it("fails branding checks when renderer artifacts do not contain logo markers", () => {
+    const data = baseNewsletter();
+    const qa = runQaChecks(data, {
+      emailHtml: "<html><body>No logo</body></html>",
+      previewHtml: "<html><body>No logo</body></html>"
+    });
+    expect(
+      qa.issues.filter((i) => i.code === "BRANDING_LOGO_MISSING").length
+    ).toBe(2);
+  });
+
+  it("fails when releaseSection is missing required fields", () => {
+    const data = baseNewsletter();
+    data.blocks.push({
+      type: "releaseSection",
+      title: "",
+      disclaimer: "",
+      items: [
+        {
+          number: 0,
+          title: "",
+          kicker: "",
+          body: "",
+          media: [{ src: "https://example.com/a.jpg", alt: "" }]
+        }
+      ]
+    });
+    const qa = runQaChecks(data);
+    expect(qa.issues.some((i) => i.code === "RELEASE_SECTION_TITLE_MISSING")).toBe(true);
+    expect(
+      qa.issues.some((i) => i.code === "RELEASE_SECTION_DISCLAIMER_MISSING")
+    ).toBe(true);
+    expect(qa.issues.some((i) => i.code === "RELEASE_ITEM_NUMBER_INVALID")).toBe(true);
+    expect(qa.issues.some((i) => i.code === "RELEASE_ITEM_TITLE_MISSING")).toBe(true);
+    expect(qa.issues.some((i) => i.code === "RELEASE_ITEM_KICKER_MISSING")).toBe(true);
+    expect(qa.issues.some((i) => i.code === "RELEASE_ITEM_BODY_MISSING")).toBe(true);
+    expect(qa.issues.some((i) => i.code === "RELEASE_MEDIA_ALT_MISSING")).toBe(true);
   });
 });

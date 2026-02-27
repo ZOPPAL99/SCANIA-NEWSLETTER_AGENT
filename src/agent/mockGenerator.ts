@@ -8,72 +8,133 @@ function firstNonEmptyLine(markdown: string): string | undefined {
     .find((line) => line.length > 0);
 }
 
-function toEditionLabel(date: Date): string {
-  const month = `${date.getUTCMonth() + 1}`.padStart(2, "0");
-  const day = `${date.getUTCDate()}`.padStart(2, "0");
-  return `${date.getUTCFullYear()}-${month}-${day}`;
-}
-
-export function generateMockNewsletter(markdown: string, now = new Date()): Newsletter {
+export function generateMockNewsletter(
+  markdown: string,
+  now = new Date(),
+): Newsletter {
   const plan = planFromMarkdown(markdown);
   const lead = firstNonEmptyLine(markdown) ?? "Weekly update";
 
   const primary = plan.sectionTitles[0] ?? "Top Stories";
-  const secondary = plan.sectionTitles[1] ?? "What to Watch";
+  const dateId = now.toISOString().slice(0, 10);
 
   return {
+    id: `newsletter-${dateId}`,
+    subject: "Welcome to your Digital Dealer update!",
+    preheader: "February edition: Upcoming releases and progress highlights.",
     meta: {
-      title: plan.title,
-      preheader: "A concise briefing with highlights and links.",
-      edition: `Edition ${toEditionLabel(now)}`,
-      dateISO: now.toISOString().slice(0, 10)
+      audience: "general",
+      language: "en",
     },
-    sections: [
+    blocks: [
       {
-        id: "top-stories",
-        title: primary,
-        blocks: [
-          { type: "heading", level: 1, text: plan.title },
+        type: "hero",
+        title: "Welcome to your Digital Dealer update!",
+        body: `${lead}. This edition summarizes upcoming product improvements and near-term release plans.`,
+        ctas: [
           {
-            type: "paragraph",
-            text: `${lead}. This mock newsletter keeps structure deterministic and renderer-safe for email and web preview output.`
+            label: "Open briefing",
+            href: "https://example.com/briefing",
           },
-          {
-            type: "image",
-            src: "https://picsum.photos/seed/newsletter/1200/640",
-            alt: "Abstract editorial illustration",
-            caption: "Lead visual used for layout verification."
-          },
-          {
-            type: "links",
-            items: [
-              { text: "Read the full analysis", url: "https://example.com/analysis" },
-              { text: "See the data notes", url: "https://example.com/data-notes" }
-            ]
-          },
-          {
-            type: "cta",
-            text: "Open full briefing",
-            url: "https://example.com/briefing"
-          }
-        ]
+        ],
       },
       {
-        id: "watch-list",
-        title: secondary,
-        blocks: [
-          { type: "heading", level: 2, text: secondary },
+        type: "text",
+        body: "Below you can review upcoming releases that focus on operational flow, transparency, and faster daily actions for dealer teams.",
+      },
+      {
+        type: "releaseSection",
+        title: "Upcoming releases",
+        disclaimer:
+          "The images presented in this newsletter are from preliminary designs.\nMinor design and other changes can be expected...",
+        items: [
           {
-            type: "paragraph",
-            text: "Watch-list items can be authored safely in JSON and rendered consistently across channels."
+            number: 1,
+            title: "Jobs for PDI activities",
+            kicker: "Automate preparation flow for faster handover.",
+            body: `${primary} initiatives now include clearer job lifecycle signals for planning and follow-up.`,
+            media: [
+              {
+                src: "https://picsum.photos/seed/release-one/1200/640",
+                alt: "Release preview for Jobs for PDI activities",
+              },
+            ],
           },
-          { type: "divider" },
           {
-            type: "paragraph",
-            text: "Add or remove blocks without changing renderer code paths; QA checks run before delivery artifacts are produced."
-          }
-        ]
-      }
-    ]
+            number: 2,
+            title: "Release timeline visibility",
+            kicker: "Give teams faster status awareness at a glance.",
+            body: "A compact timeline summary highlights what is planned, in validation, and ready for rollout.",
+            media: [
+              {
+                src: "https://picsum.photos/seed/release-two/1200/640",
+                alt: "Release preview for timeline visibility",
+              },
+            ],
+          },
+          {
+            number: 3,
+            title: "Workshop slot coordination",
+            kicker: "Reduce booking friction during peak demand periods.",
+            body: "Slot coordination adds quicker conflict detection and clearer prioritization when demand changes.",
+            media: [
+              {
+                src: "https://picsum.photos/seed/release-three/1200/640",
+                alt: "Release preview for workshop slot coordination",
+              },
+            ],
+          },
+          {
+            number: 4,
+            title: "Parts request tracking",
+            kicker: "Improve confidence with clearer delivery checkpoints.",
+            body: "Parts request tracking now surfaces progress states and delays earlier so teams can react faster.",
+            media: [
+              {
+                src: "https://picsum.photos/seed/release-four/1200/640",
+                alt: "Release preview for parts request tracking",
+              },
+            ],
+          },
+          {
+            number: 5,
+            title: "Retail handover checklist",
+            kicker: "Standardize delivery quality across locations.",
+            body: "The handover checklist supports consistent customer-ready delivery with clearer completion indicators.",
+            media: [
+              {
+                src: "https://picsum.photos/seed/release-five/1200/640",
+                alt: "Release preview for retail handover checklist",
+              },
+            ],
+          },
+          {
+            number: 6,
+            title: "Service notification center",
+            kicker: "Centralize critical updates for daily execution.",
+            body: "A unified notification center helps teams act on high-priority service events without missing context.",
+            media: [
+              {
+                src: "https://picsum.photos/seed/release-six/1200/640",
+                alt: "Release preview for service notification center",
+              },
+            ],
+          },
+        ],
+      },
+      {
+        type: "cta",
+        ctas: [
+          {
+            label: "Read updates",
+            href: "https://example.com/updates",
+          },
+        ],
+      },
+      {
+        type: "footer",
+        body: "Add or remove blocks without changing renderer code paths; QA checks run before delivery artifacts are produced.",
+      },
+    ],
   };
 }
