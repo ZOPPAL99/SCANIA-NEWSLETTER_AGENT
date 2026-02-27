@@ -151,4 +151,22 @@ describe("runQaChecks", () => {
     expect(qa.issues.some((i) => i.code === "RELEASE_ITEM_BODY_MISSING")).toBe(true);
     expect(qa.issues.some((i) => i.code === "RELEASE_MEDIA_ALT_MISSING")).toBe(true);
   });
+
+  it("fails when releaseSection contains more than 6 items", () => {
+    const data = baseNewsletter();
+    data.blocks.push({
+      type: "releaseSection",
+      title: "Upcoming releases",
+      disclaimer: "The images presented are from preliminary designs.",
+      items: Array.from({ length: 7 }, (_, index) => ({
+        number: index + 1,
+        title: `Release ${index + 1}`,
+        kicker: "Kicker",
+        body: "Body",
+      })),
+    });
+
+    const qa = runQaChecks(data);
+    expect(qa.issues.some((i) => i.code === "RELEASE_ITEM_LIMIT")).toBe(true);
+  });
 });

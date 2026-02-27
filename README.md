@@ -63,6 +63,10 @@ Optional API mode:
 npm.cmd run generate -- --use-api --input examples/input.md --out dist
 ```
 
+Authoring template:
+
+- `templates/input-template.md`
+
 ## Tests
 
 ```powershell

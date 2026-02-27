@@ -1,4 +1,5 @@
 import { z } from "zod";
+export const MAX_RELEASE_ITEMS = 6;
 
 export const imageSchema = z
   .object({
@@ -84,7 +85,7 @@ const releaseSectionBlockSchema = z
     type: z.literal("releaseSection"),
     title: z.string().min(1),
     disclaimer: z.string().min(1),
-    items: z.array(releaseItemSchema).min(1),
+    items: z.array(releaseItemSchema).min(1).max(MAX_RELEASE_ITEMS),
   })
   .strict();
 

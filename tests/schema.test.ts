@@ -109,4 +109,25 @@ describe("NewsletterSchema", () => {
       }),
     ).toThrow();
   });
+
+  it("rejects releaseSection with more than 6 items", () => {
+    expect(() =>
+      NewsletterSchema.parse({
+        subject: "Test",
+        blocks: [
+          {
+            type: "releaseSection",
+            title: "Upcoming releases",
+            disclaimer: "Preliminary designs may change before release.",
+            items: Array.from({ length: 7 }, (_, index) => ({
+              number: index + 1,
+              title: `Item ${index + 1}`,
+              kicker: "Kicker",
+              body: "Body",
+            })),
+          },
+        ],
+      }),
+    ).toThrow();
+  });
 });

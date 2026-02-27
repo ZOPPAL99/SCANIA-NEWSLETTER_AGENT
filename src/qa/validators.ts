@@ -1,4 +1,5 @@
 import type { Block, Newsletter } from "../schemas/newsletter.js";
+import { MAX_RELEASE_ITEMS } from "../schemas/newsletter.js";
 import {
   allowedBodyTextSizesPx,
   allowedHeadingTextSizesPx,
@@ -253,6 +254,15 @@ function releaseSectionIssues(newsletter: Newsletter): QAIssue[] {
         code: "RELEASE_SECTION_DISCLAIMER_MISSING",
         message: "releaseSection.disclaimer is required.",
         location: `blocks[${blockIndex}].disclaimer`
+      });
+    }
+
+    if (block.items.length > MAX_RELEASE_ITEMS) {
+      issues.push({
+        severity: "error",
+        code: "RELEASE_ITEM_LIMIT",
+        message: `releaseSection supports at most ${MAX_RELEASE_ITEMS} items.`,
+        location: `blocks[${blockIndex}].items`,
       });
     }
 
