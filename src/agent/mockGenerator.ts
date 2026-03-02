@@ -15,10 +15,9 @@ export function generateMockNewsletter(
 ): Newsletter {
   const plan = planFromMarkdown(markdown);
   const lead = firstNonEmptyLine(markdown) ?? "Weekly update";
-
   const primary = plan.sectionTitles[0] ?? "Top Stories";
   const dateId = now.toISOString().slice(0, 10);
-  const releaseItems = [
+  const legacyReleaseItems = [
     {
       number: 1,
       title: "Jobs for PDI activities",
@@ -93,10 +92,81 @@ export function generateMockNewsletter(
     },
   ].slice(0, MAX_RELEASE_ITEMS);
 
+  const structuredMode = /(^|\r?\n)#\s*Subject\b/i.test(markdown);
+  if (!structuredMode) {
+    return {
+      id: `newsletter-${dateId}`,
+      subject: "Welcome to your Digital Dealer update!",
+      preheader: "February edition: Upcoming releases and progress highlights.",
+      meta: {
+        audience: "general",
+        language: "en",
+      },
+      blocks: [
+        {
+          type: "hero",
+          title: "Welcome to your Digital Dealer update!",
+          body: `${lead}. This edition summarizes upcoming product improvements and near-term release plans.`,
+          ctas: [
+            {
+              label: "Open briefing",
+              href: "https://example.com/briefing",
+            },
+          ],
+        },
+        {
+          type: "text",
+          body: "Below you can review upcoming releases that focus on operational flow, transparency, and faster daily actions for dealer teams.",
+        },
+        {
+          type: "releaseSection",
+          title: "Upcoming releases",
+          disclaimer:
+            "The images presented in this newsletter are from preliminary designs.\nMinor design and other changes can be expected...",
+          items: legacyReleaseItems,
+        },
+        {
+          type: "cta",
+          ctas: [
+            {
+              label: "Read updates",
+              href: "https://example.com/updates",
+            },
+          ],
+        },
+        {
+          type: "footer",
+          body: "Add or remove blocks without changing renderer code paths; QA checks run before delivery artifacts are produced.",
+        },
+      ],
+    };
+  }
+
+  const parsedReleaseItems = plan.releaseSection.items
+    .slice(0, MAX_RELEASE_ITEMS)
+    .map((item) => ({
+      number: item.number,
+      title: item.title,
+      kicker: item.kicker,
+      body: item.body,
+      media: item.image ? [{ src: item.image, alt: item.alt ?? "" }] : undefined,
+      links: item.links,
+    }));
+  const releaseItems =
+    parsedReleaseItems.length > 0 ? parsedReleaseItems : legacyReleaseItems;
+  const subject = plan.header.subject || "Welcome to your Digital Dealer update!";
+  const edition = plan.header.edition || "February";
+  const intro =
+    plan.header.intro ||
+    `${lead}. This edition summarizes upcoming product improvements and near-term release plans.`;
+  const disclaimer =
+    plan.releaseSection.disclaimer ||
+    "The images presented in this newsletter are from preliminary designs.\nMinor design and other changes can be expected...";
+
   return {
     id: `newsletter-${dateId}`,
-    subject: "Welcome to your Digital Dealer update!",
-    preheader: "February edition: Upcoming releases and progress highlights.",
+    subject,
+    preheader: `${edition} edition: Upcoming releases and progress highlights.`,
     meta: {
       audience: "general",
       language: "en",
@@ -104,8 +174,8 @@ export function generateMockNewsletter(
     blocks: [
       {
         type: "hero",
-        title: "Welcome to your Digital Dealer update!",
-        body: `${lead}. This edition summarizes upcoming product improvements and near-term release plans.`,
+        title: subject,
+        body: `${intro}${plan.header.edition ? `\nEdition: ${plan.header.edition}` : ""}`,
         ctas: [
           {
             label: "Open briefing",
@@ -114,28 +184,14 @@ export function generateMockNewsletter(
         ],
       },
       {
-        type: "text",
-        body: "Below you can review upcoming releases that focus on operational flow, transparency, and faster daily actions for dealer teams.",
-      },
-      {
         type: "releaseSection",
-        title: "Upcoming releases",
-        disclaimer:
-          "The images presented in this newsletter are from preliminary designs.\nMinor design and other changes can be expected...",
+        title: plan.releaseSection.title,
+        disclaimer,
         items: releaseItems,
       },
       {
-        type: "cta",
-        ctas: [
-          {
-            label: "Read updates",
-            href: "https://example.com/updates",
-          },
-        ],
-      },
-      {
         type: "footer",
-        body: "Add or remove blocks without changing renderer code paths; QA checks run before delivery artifacts are produced.",
+        body: plan.footer.body,
       },
     ],
   };

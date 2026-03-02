@@ -72,6 +72,12 @@ describe("NewsletterSchema", () => {
                   alt: "Release screenshot",
                 },
               ],
+              links: [
+                {
+                  label: "Read notes",
+                  href: "https://example.com/release-notes",
+                },
+              ],
             },
           ],
         },
@@ -125,6 +131,35 @@ describe("NewsletterSchema", () => {
               kicker: "Kicker",
               body: "Body",
             })),
+          },
+        ],
+      }),
+    ).toThrow();
+  });
+
+  it("rejects releaseSection links without labels", () => {
+    expect(() =>
+      NewsletterSchema.parse({
+        subject: "Test",
+        blocks: [
+          {
+            type: "releaseSection",
+            title: "Upcoming releases",
+            disclaimer: "Preliminary designs may change before release.",
+            items: [
+              {
+                number: 1,
+                title: "Item 1",
+                kicker: "Kicker",
+                body: "Body",
+                links: [
+                  {
+                    label: "",
+                    href: "https://example.com/release-1",
+                  },
+                ],
+              },
+            ],
           },
         ],
       }),

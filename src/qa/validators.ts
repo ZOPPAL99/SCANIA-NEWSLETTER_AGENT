@@ -10,6 +10,8 @@ import {
 import type { QAIssue, QAResult } from "./types.js";
 
 const MAX_BODY_LINE_LENGTH = 120;
+const MAX_RELEASE_BODY_WORDS = 36;
+const MAX_RELEASE_BODY_SENTENCES = 2;
 
 function headingOrderIssues(newsletter: Newsletter): QAIssue[] {
   const issues: QAIssue[] = [];
@@ -268,11 +270,19 @@ function releaseSectionIssues(newsletter: Newsletter): QAIssue[] {
 
     for (let itemIndex = 0; itemIndex < block.items.length; itemIndex++) {
       const item = block.items[itemIndex];
+      const expectedNumber = itemIndex + 1;
       if (!Number.isInteger(item.number) || item.number < 1) {
         issues.push({
           severity: "error",
           code: "RELEASE_ITEM_NUMBER_INVALID",
           message: "releaseSection.items[*].number must be a positive integer.",
+          location: `blocks[${blockIndex}].items[${itemIndex}].number`
+        });
+      } else if (item.number !== expectedNumber) {
+        issues.push({
+          severity: "error",
+          code: "RELEASE_ITEM_NUMBER_SEQUENCE",
+          message: `releaseSection.items[*].number must be sequential (expected ${expectedNumber}, found ${item.number}).`,
           location: `blocks[${blockIndex}].items[${itemIndex}].number`
         });
       }
@@ -299,6 +309,32 @@ function releaseSectionIssues(newsletter: Newsletter): QAIssue[] {
           message: "releaseSection.items[*].body is required.",
           location: `blocks[${blockIndex}].items[${itemIndex}].body`
         });
+      } else {
+        const words = item.body.trim().split(/\s+/).filter(Boolean);
+        const sentences = item.body
+          .split(/[.!?]+/)
+          .map((segment) => segment.trim())
+          .filter(Boolean).length;
+        if (words.length > MAX_RELEASE_BODY_WORDS || sentences > MAX_RELEASE_BODY_SENTENCES) {
+          issues.push({
+            severity: "error",
+            code: "RELEASE_ITEM_BODY_NOT_SCANNABLE",
+            message: `releaseSection.items[*].body must stay short and scannable (<= ${MAX_RELEASE_BODY_WORDS} words and <= ${MAX_RELEASE_BODY_SENTENCES} sentences).`,
+            location: `blocks[${blockIndex}].items[${itemIndex}].body`
+          });
+        }
+      }
+
+      const links = item.links ?? [];
+      for (let linkIndex = 0; linkIndex < links.length; linkIndex++) {
+        if (!links[linkIndex].label.trim()) {
+          issues.push({
+            severity: "error",
+            code: "RELEASE_LINK_LABEL_MISSING",
+            message: "releaseSection links must include visible labels.",
+            location: `blocks[${blockIndex}].items[${itemIndex}].links[${linkIndex}].label`
+          });
+        }
       }
 
       const media = item.media ?? [];

@@ -107,6 +107,12 @@ function renderReleaseSection(block: Block): string {
 
   const items = block.items
     .map((item) => {
+      const links = (item.links ?? [])
+        .map(
+          (link) =>
+            `<a href="${escapeHtml(link.href)}" target="_blank" rel="noopener noreferrer" style="display:inline-block;color:${defaultEmailTheme.accentColor};font-size:${typeScale.body.smallPx}px;line-height:1.4;text-decoration:underline;margin-right:${space["space.2"]}px;margin-top:${space["space.1"]}px;">${escapeHtml(link.label)}</a>`,
+        )
+        .join("");
       const media = (item.media ?? [])
         .map(
           (image) =>
@@ -114,7 +120,7 @@ function renderReleaseSection(block: Block): string {
         )
         .join("");
 
-      return `<tr><td style="padding:${space["space.4"]}px ${space["space.5"]}px;border-top:1px solid ${defaultEmailTheme.borderColor};"><table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" style="background:linear-gradient(180deg,rgba(34,48,65,0.12) 0%, rgba(17,27,38,0) 100%);border-radius:${space["space.2"]}px;"><tr><td valign="top" style="width:${typeScale.heading.h1Px}px;font-size:${typeScale.heading.h1Px}px;line-height:1;color:${defaultEmailTheme.headerGradientStart};font-weight:700;padding-right:${space["space.2"]}px;">${item.number}</td><td valign="top"><div style="font-size:${typeScale.body.basePx}px;line-height:1.4;color:${defaultEmailTheme.textColor};font-weight:700;">${escapeHtml(item.title)}</div><div style="font-size:${typeScale.body.smallPx}px;line-height:1.5;color:${defaultEmailTheme.mutedTextColor};font-weight:700;padding-top:${space["space.1"]}px;">${escapeHtml(item.kicker)}</div><div style="font-size:${typeScale.body.basePx}px;line-height:1.6;color:${defaultEmailTheme.textColor};padding-top:${space["space.1"]}px;">${escapeHtml(item.body)}</div>${media}</td></tr></table></td></tr>`;
+      return `<tr><td style="padding:${space["space.4"]}px ${space["space.5"]}px;border-top:1px solid ${defaultEmailTheme.borderColor};"><table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" style="background:linear-gradient(180deg,rgba(34,48,65,0.12) 0%, rgba(17,27,38,0) 100%);border-radius:${space["space.2"]}px;"><tr><td valign="top" style="width:${typeScale.heading.h1Px}px;font-size:${typeScale.heading.h1Px}px;line-height:1;color:${defaultEmailTheme.headerGradientStart};font-weight:700;padding-right:${space["space.2"]}px;">${item.number}</td><td valign="top"><div style="font-size:${typeScale.body.basePx}px;line-height:1.4;color:${defaultEmailTheme.textColor};font-weight:700;">${escapeHtml(item.title)}</div><div style="font-size:${typeScale.body.smallPx}px;line-height:1.5;color:${defaultEmailTheme.mutedTextColor};font-weight:700;padding-top:${space["space.1"]}px;">${escapeHtml(item.kicker)}</div><div style="font-size:${typeScale.body.basePx}px;line-height:1.6;color:${defaultEmailTheme.textColor};padding-top:${space["space.1"]}px;">${escapeHtml(item.body)}</div>${links ? `<div style="padding-top:${space["space.1"]}px;">${links}</div>` : ""}${media}</td></tr></table></td></tr>`;
     })
     .join("");
 

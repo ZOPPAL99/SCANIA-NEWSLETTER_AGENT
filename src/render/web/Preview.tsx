@@ -88,6 +88,15 @@ function renderReleaseItems(items: ReleaseItem[]): React.ReactNode {
             <h3>{item.title}</h3>
             <p className="release-kicker">{item.kicker}</p>
             <p className="release-body">{item.body}</p>
+            {(item.links ?? []).length ? (
+              <p className="release-links">
+                {(item.links ?? []).map((link, index) => (
+                  <a href={link.href} key={`${item.number}-link-${index}`}>
+                    {link.label}
+                  </a>
+                ))}
+              </p>
+            ) : null}
             {(item.media ?? []).map((image, index) => (
               <figure key={`${item.number}-media-${index}`}>
                 <img src={image.src} alt={image.alt} />

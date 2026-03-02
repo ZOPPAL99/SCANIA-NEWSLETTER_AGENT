@@ -23,6 +23,13 @@ export const releaseMediaSchema = z
   })
   .strict();
 
+export const releaseLinkSchema = z
+  .object({
+    label: z.string().min(1),
+    href: z.string().url(),
+  })
+  .strict();
+
 export const releaseItemSchema = z
   .object({
     number: z.number().int().positive(),
@@ -30,6 +37,7 @@ export const releaseItemSchema = z
     kicker: z.string().min(1),
     body: z.string().min(1),
     media: z.array(releaseMediaSchema).optional(),
+    links: z.array(releaseLinkSchema).optional(),
   })
   .strict();
 

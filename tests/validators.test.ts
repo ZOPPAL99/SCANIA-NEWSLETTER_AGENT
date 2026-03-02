@@ -169,4 +169,78 @@ describe("runQaChecks", () => {
     const qa = runQaChecks(data);
     expect(qa.issues.some((i) => i.code === "RELEASE_ITEM_LIMIT")).toBe(true);
   });
+
+  it("fails when releaseSection numbering is not sequential", () => {
+    const data = baseNewsletter();
+    data.blocks.push({
+      type: "releaseSection",
+      title: "Upcoming releases",
+      disclaimer: "Preview visuals only.",
+      items: [
+        {
+          number: 1,
+          title: "Release 1",
+          kicker: "Kicker",
+          body: "Short and scannable body.",
+        },
+        {
+          number: 3,
+          title: "Release 3",
+          kicker: "Kicker",
+          body: "Short and scannable body.",
+        },
+      ],
+    });
+
+    const qa = runQaChecks(data);
+    expect(qa.issues.some((i) => i.code === "RELEASE_ITEM_NUMBER_SEQUENCE")).toBe(true);
+  });
+
+  it("fails when releaseSection body is not short and scannable", () => {
+    const data = baseNewsletter();
+    data.blocks.push({
+      type: "releaseSection",
+      title: "Upcoming releases",
+      disclaimer: "Preview visuals only.",
+      items: [
+        {
+          number: 1,
+          title: "Release 1",
+          kicker: "Kicker",
+          body: "This release body is intentionally long so it exceeds the scannable threshold and keeps adding detail for context, caveats, rollout notes, operational considerations, migration steps, compatibility remarks, team ownership notes, and change-management guidance. It also includes another sentence to ensure sentence count validation triggers.",
+        },
+      ],
+    });
+
+    const qa = runQaChecks(data);
+    expect(
+      qa.issues.some((i) => i.code === "RELEASE_ITEM_BODY_NOT_SCANNABLE")
+    ).toBe(true);
+  });
+
+  it("fails when releaseSection links are not labeled", () => {
+    const data = baseNewsletter();
+    data.blocks.push({
+      type: "releaseSection",
+      title: "Upcoming releases",
+      disclaimer: "Preview visuals only.",
+      items: [
+        {
+          number: 1,
+          title: "Release 1",
+          kicker: "Kicker",
+          body: "Short body.",
+          links: [
+            {
+              label: "   ",
+              href: "https://example.com/release-1",
+            },
+          ],
+        },
+      ],
+    });
+
+    const qa = runQaChecks(data);
+    expect(qa.issues.some((i) => i.code === "RELEASE_LINK_LABEL_MISSING")).toBe(true);
+  });
 });
