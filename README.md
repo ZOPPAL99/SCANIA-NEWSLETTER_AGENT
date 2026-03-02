@@ -67,6 +67,54 @@ Authoring template:
 
 - `templates/input-template.md`
 
+## Local UI Usage
+
+This project includes a local-only authoring homepage:
+
+- API server: `http://localhost:3333` (`apps/server`)
+- Web UI: `http://localhost:5173` (`apps/web`)
+
+Start both together:
+
+```powershell
+npm.cmd run dev
+```
+
+The homepage posts newsletter JSON to the local server:
+
+- `POST /api/validate`: returns live QA (`ok` + `issues`) and preview HTML.
+- `POST /api/generate`: validates, runs QA, renders artifacts, and writes:
+  - `dist/newsletter.json`
+  - `dist/email.html`
+  - `dist/preview.html`
+  - `dist/qa-report.md`
+- QA issues in the UI provide contextual `Quick fix` actions that scroll/focus mapped authoring fields.
+
+Production-style web build:
+
+```powershell
+npm.cmd run build
+```
+
+## Prompt Cache-Hit Strategy
+
+To maximize cache hits in future model calls, prompts are assembled in canonical order:
+
+1. `System Instructions` (static)
+2. `Reference Documents` (static)
+3. `Few-Shot Examples` (static)
+4. `Tool Definitions` (static)
+5. `User Question / Variable Input` (dynamic, always last)
+
+Static prompt assets are stored under `prompts/`:
+
+- `prompts/system-instructions.md`
+- `prompts/reference-documents.md`
+- `prompts/few-shot-examples.md`
+- `prompts/tool-definitions.md`
+
+Rule: keep static sections first and dynamic user input last. For real OpenAI integration, pass ordered `messages` exactly in this sequence.
+
 ## Tests
 
 ```powershell
