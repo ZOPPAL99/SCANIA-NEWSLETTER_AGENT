@@ -7,7 +7,7 @@ All generated newsletter content must be validated by schema and QA before outpu
 ## Stack and Dependencies
 - Runtime: Node.js 20+
 - Language: TypeScript (ESM)
-- Core libs: `zod`, `react`, `react-dom`
+- Core libs: `zod`, `react`, `react-dom`, `express`, `cors`, `multer`
 - Tooling: `tsx`, `vitest`, `typescript`
 
 ## Project Conventions
@@ -27,7 +27,7 @@ All generated newsletter content must be validated by schema and QA before outpu
   - heading order requires exactly one H1, then H2/H3 without level skips
   - CTA text must be verb-first and <= 5 words
 - Every newsletter must include at least one CTA.
-- Images must include non-empty alt text.
+- Images should always include meaningful alt text; local UI may temporarily allow empty values during drafting, but QA enforces non-empty alt for a passing build.
 - Links must include visible text.
 
 ## QA and Reporting

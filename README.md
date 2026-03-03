@@ -96,6 +96,14 @@ Publish mode selector:
 - `preview/local`: renders uploaded images using local `assets/<filename>` relative paths.
 - `outlook-cid`: TODO for MVP (planned `.eml` output with CID attachments).
 
+Image upload request shape:
+
+```http
+POST /api/upload
+Content-Type: multipart/form-data
+Field: image=<binary png/jpg/jpeg>
+```
+
 Production-style web build:
 
 ```powershell
