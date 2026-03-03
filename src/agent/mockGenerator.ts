@@ -1,6 +1,6 @@
 import type { Newsletter } from "../schemas/newsletter.js";
 import { planFromMarkdown } from "./planner.js";
-import { MAX_RELEASE_ITEMS } from "../schemas/newsletter.js";
+import { MAX_FEATURE_ITEMS } from "../schemas/newsletter.js";
 
 function firstNonEmptyLine(markdown: string): string | undefined {
   return markdown
@@ -17,7 +17,7 @@ export function generateMockNewsletter(
   const lead = firstNonEmptyLine(markdown) ?? "Weekly update";
   const primary = plan.sectionTitles[0] ?? "Top Stories";
   const dateId = now.toISOString().slice(0, 10);
-  const legacyReleaseItems = [
+  const legacyFeatureItems = [
     {
       number: 1,
       title: "Jobs for PDI activities",
@@ -90,7 +90,7 @@ export function generateMockNewsletter(
         },
       ],
     },
-  ].slice(0, MAX_RELEASE_ITEMS);
+  ].slice(0, MAX_FEATURE_ITEMS);
 
   const structuredMode = /(^|\r?\n)#\s*Subject\b/i.test(markdown);
   if (!structuredMode) {
@@ -119,11 +119,11 @@ export function generateMockNewsletter(
           body: "Below you can review upcoming releases that focus on operational flow, transparency, and faster daily actions for dealer teams.",
         },
         {
-          type: "releaseSection",
+          type: "featureSection",
           title: "Upcoming releases",
           disclaimer:
             "The images presented in this newsletter are from preliminary designs.\nMinor design and other changes can be expected...",
-          items: legacyReleaseItems,
+          items: legacyFeatureItems,
         },
         {
           type: "cta",
@@ -142,8 +142,8 @@ export function generateMockNewsletter(
     };
   }
 
-  const parsedReleaseItems = plan.releaseSection.items
-    .slice(0, MAX_RELEASE_ITEMS)
+  const parsedFeatureItems = plan.featureSection.items
+    .slice(0, MAX_FEATURE_ITEMS)
     .map((item) => ({
       number: item.number,
       title: item.title,
@@ -152,15 +152,15 @@ export function generateMockNewsletter(
       media: item.image ? [{ src: item.image, alt: item.alt ?? "" }] : undefined,
       links: item.links,
     }));
-  const releaseItems =
-    parsedReleaseItems.length > 0 ? parsedReleaseItems : legacyReleaseItems;
+  const featureItems =
+    parsedFeatureItems.length > 0 ? parsedFeatureItems : legacyFeatureItems;
   const subject = plan.header.subject || "Welcome to your Digital Dealer update!";
   const edition = plan.header.edition || "February";
   const intro =
     plan.header.intro ||
     `${lead}. This edition summarizes upcoming product improvements and near-term release plans.`;
   const disclaimer =
-    plan.releaseSection.disclaimer ||
+    plan.featureSection.disclaimer ||
     "The images presented in this newsletter are from preliminary designs.\nMinor design and other changes can be expected...";
 
   return {
@@ -184,10 +184,10 @@ export function generateMockNewsletter(
         ],
       },
       {
-        type: "releaseSection",
-        title: plan.releaseSection.title,
+        type: "featureSection",
+        title: plan.featureSection.title,
         disclaimer,
-        items: releaseItems,
+        items: featureItems,
       },
       {
         type: "footer",

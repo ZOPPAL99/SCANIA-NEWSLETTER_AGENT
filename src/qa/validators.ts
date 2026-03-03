@@ -1,5 +1,5 @@
 import type { Block, Newsletter } from "../schemas/newsletter.js";
-import { MAX_RELEASE_ITEMS } from "../schemas/newsletter.js";
+import { MAX_FEATURE_ITEMS } from "../schemas/newsletter.js";
 import {
   allowedBodyTextSizesPx,
   allowedHeadingTextSizesPx,
@@ -10,8 +10,8 @@ import {
 import type { QAIssue, QAResult } from "./types.js";
 
 const MAX_BODY_LINE_LENGTH = 120;
-const MAX_RELEASE_BODY_WORDS = 36;
-const MAX_RELEASE_BODY_SENTENCES = 2;
+const MAX_FEATURE_BODY_WORDS = 36;
+const MAX_FEATURE_BODY_SENTENCES = 2;
 
 function headingOrderIssues(newsletter: Newsletter): QAIssue[] {
   const issues: QAIssue[] = [];
@@ -232,20 +232,20 @@ function heroAndFeatureCardIssues(newsletter: Newsletter): QAIssue[] {
   return issues;
 }
 
-function releaseSectionIssues(newsletter: Newsletter): QAIssue[] {
+function featureSectionIssues(newsletter: Newsletter): QAIssue[] {
   const issues: QAIssue[] = [];
 
   for (let blockIndex = 0; blockIndex < newsletter.blocks.length; blockIndex++) {
     const block = newsletter.blocks[blockIndex];
-    if (block.type !== "releaseSection") {
+    if (block.type !== "featureSection") {
       continue;
     }
 
     if (!block.title.trim()) {
       issues.push({
         severity: "error",
-        code: "RELEASE_SECTION_TITLE_MISSING",
-        message: "releaseSection.title is required.",
+        code: "FEATURE_SECTION_TITLE_MISSING",
+        message: "featureSection.title is required.",
         location: `blocks[${blockIndex}].title`
       });
     }
@@ -253,17 +253,17 @@ function releaseSectionIssues(newsletter: Newsletter): QAIssue[] {
     if (!block.disclaimer.trim()) {
       issues.push({
         severity: "error",
-        code: "RELEASE_SECTION_DISCLAIMER_MISSING",
-        message: "releaseSection.disclaimer is required.",
+        code: "FEATURE_SECTION_DISCLAIMER_MISSING",
+        message: "featureSection.disclaimer is required.",
         location: `blocks[${blockIndex}].disclaimer`
       });
     }
 
-    if (block.items.length > MAX_RELEASE_ITEMS) {
+    if (block.items.length > MAX_FEATURE_ITEMS) {
       issues.push({
         severity: "error",
-        code: "RELEASE_ITEM_LIMIT",
-        message: `releaseSection supports at most ${MAX_RELEASE_ITEMS} items.`,
+        code: "FEATURE_ITEM_LIMIT",
+        message: `featureSection supports at most ${MAX_FEATURE_ITEMS} items.`,
         location: `blocks[${blockIndex}].items`,
       });
     }
@@ -274,39 +274,39 @@ function releaseSectionIssues(newsletter: Newsletter): QAIssue[] {
       if (!Number.isInteger(item.number) || item.number < 1) {
         issues.push({
           severity: "error",
-          code: "RELEASE_ITEM_NUMBER_INVALID",
-          message: "releaseSection.items[*].number must be a positive integer.",
+          code: "FEATURE_ITEM_NUMBER_INVALID",
+          message: "featureSection.items[*].number must be a positive integer.",
           location: `blocks[${blockIndex}].items[${itemIndex}].number`
         });
       } else if (item.number !== expectedNumber) {
         issues.push({
           severity: "error",
-          code: "RELEASE_ITEM_NUMBER_SEQUENCE",
-          message: `releaseSection.items[*].number must be sequential (expected ${expectedNumber}, found ${item.number}).`,
+          code: "FEATURE_ITEM_NUMBER_SEQUENCE",
+          message: `featureSection.items[*].number must be sequential (expected ${expectedNumber}, found ${item.number}).`,
           location: `blocks[${blockIndex}].items[${itemIndex}].number`
         });
       }
       if (!item.title.trim()) {
         issues.push({
           severity: "error",
-          code: "RELEASE_ITEM_TITLE_MISSING",
-          message: "releaseSection.items[*].title is required.",
+          code: "FEATURE_ITEM_TITLE_MISSING",
+          message: "featureSection.items[*].title is required.",
           location: `blocks[${blockIndex}].items[${itemIndex}].title`
         });
       }
       if (!item.kicker.trim()) {
         issues.push({
           severity: "error",
-          code: "RELEASE_ITEM_KICKER_MISSING",
-          message: "releaseSection.items[*].kicker is required.",
+          code: "FEATURE_ITEM_KICKER_MISSING",
+          message: "featureSection.items[*].kicker is required.",
           location: `blocks[${blockIndex}].items[${itemIndex}].kicker`
         });
       }
       if (!item.body.trim()) {
         issues.push({
           severity: "error",
-          code: "RELEASE_ITEM_BODY_MISSING",
-          message: "releaseSection.items[*].body is required.",
+          code: "FEATURE_ITEM_BODY_MISSING",
+          message: "featureSection.items[*].body is required.",
           location: `blocks[${blockIndex}].items[${itemIndex}].body`
         });
       } else {
@@ -315,11 +315,11 @@ function releaseSectionIssues(newsletter: Newsletter): QAIssue[] {
           .split(/[.!?]+/)
           .map((segment) => segment.trim())
           .filter(Boolean).length;
-        if (words.length > MAX_RELEASE_BODY_WORDS || sentences > MAX_RELEASE_BODY_SENTENCES) {
+        if (words.length > MAX_FEATURE_BODY_WORDS || sentences > MAX_FEATURE_BODY_SENTENCES) {
           issues.push({
             severity: "error",
-            code: "RELEASE_ITEM_BODY_NOT_SCANNABLE",
-            message: `releaseSection.items[*].body must stay short and scannable (<= ${MAX_RELEASE_BODY_WORDS} words and <= ${MAX_RELEASE_BODY_SENTENCES} sentences).`,
+            code: "FEATURE_ITEM_BODY_NOT_SCANNABLE",
+            message: `featureSection.items[*].body must stay short and scannable (<= ${MAX_FEATURE_BODY_WORDS} words and <= ${MAX_FEATURE_BODY_SENTENCES} sentences).`,
             location: `blocks[${blockIndex}].items[${itemIndex}].body`
           });
         }
@@ -330,8 +330,8 @@ function releaseSectionIssues(newsletter: Newsletter): QAIssue[] {
         if (!links[linkIndex].label.trim()) {
           issues.push({
             severity: "error",
-            code: "RELEASE_LINK_LABEL_MISSING",
-            message: "releaseSection links must include visible labels.",
+            code: "FEATURE_LINK_LABEL_MISSING",
+            message: "featureSection links must include visible labels.",
             location: `blocks[${blockIndex}].items[${itemIndex}].links[${linkIndex}].label`
           });
         }
@@ -342,8 +342,8 @@ function releaseSectionIssues(newsletter: Newsletter): QAIssue[] {
         if (!media[mediaIndex].alt.trim()) {
           issues.push({
             severity: "error",
-            code: "RELEASE_MEDIA_ALT_MISSING",
-            message: "releaseSection media requires non-empty alt text.",
+            code: "FEATURE_MEDIA_ALT_MISSING",
+            message: "featureSection media requires non-empty alt text.",
             location: `blocks[${blockIndex}].items[${itemIndex}].media[${mediaIndex}]`
           });
         }
@@ -539,7 +539,7 @@ export function runQaChecks(
     ...ctaIssues(newsletter),
     ...bodyLineLengthIssues(newsletter),
     ...heroAndFeatureCardIssues(newsletter),
-    ...releaseSectionIssues(newsletter),
+    ...featureSectionIssues(newsletter),
     ...rendererStyleIssues(artifacts?.emailHtml, artifacts?.previewHtml),
     ...rendererBrandingIssues(artifacts?.emailHtml, artifacts?.previewHtml),
   ];

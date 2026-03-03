@@ -124,10 +124,10 @@ describe("runQaChecks", () => {
     ).toBe(2);
   });
 
-  it("fails when releaseSection is missing required fields", () => {
+  it("fails when featureSection is missing required fields", () => {
     const data = baseNewsletter();
     data.blocks.push({
-      type: "releaseSection",
+      type: "featureSection",
       title: "",
       disclaimer: "",
       items: [
@@ -141,21 +141,21 @@ describe("runQaChecks", () => {
       ]
     });
     const qa = runQaChecks(data);
-    expect(qa.issues.some((i) => i.code === "RELEASE_SECTION_TITLE_MISSING")).toBe(true);
+    expect(qa.issues.some((i) => i.code === "FEATURE_SECTION_TITLE_MISSING")).toBe(true);
     expect(
-      qa.issues.some((i) => i.code === "RELEASE_SECTION_DISCLAIMER_MISSING")
+      qa.issues.some((i) => i.code === "FEATURE_SECTION_DISCLAIMER_MISSING")
     ).toBe(true);
-    expect(qa.issues.some((i) => i.code === "RELEASE_ITEM_NUMBER_INVALID")).toBe(true);
-    expect(qa.issues.some((i) => i.code === "RELEASE_ITEM_TITLE_MISSING")).toBe(true);
-    expect(qa.issues.some((i) => i.code === "RELEASE_ITEM_KICKER_MISSING")).toBe(true);
-    expect(qa.issues.some((i) => i.code === "RELEASE_ITEM_BODY_MISSING")).toBe(true);
-    expect(qa.issues.some((i) => i.code === "RELEASE_MEDIA_ALT_MISSING")).toBe(true);
+    expect(qa.issues.some((i) => i.code === "FEATURE_ITEM_NUMBER_INVALID")).toBe(true);
+    expect(qa.issues.some((i) => i.code === "FEATURE_ITEM_TITLE_MISSING")).toBe(true);
+    expect(qa.issues.some((i) => i.code === "FEATURE_ITEM_KICKER_MISSING")).toBe(true);
+    expect(qa.issues.some((i) => i.code === "FEATURE_ITEM_BODY_MISSING")).toBe(true);
+    expect(qa.issues.some((i) => i.code === "FEATURE_MEDIA_ALT_MISSING")).toBe(true);
   });
 
-  it("fails when releaseSection contains more than 6 items", () => {
+  it("fails when featureSection contains more than 6 items", () => {
     const data = baseNewsletter();
     data.blocks.push({
-      type: "releaseSection",
+      type: "featureSection",
       title: "Upcoming releases",
       disclaimer: "The images presented are from preliminary designs.",
       items: Array.from({ length: 7 }, (_, index) => ({
@@ -167,13 +167,13 @@ describe("runQaChecks", () => {
     });
 
     const qa = runQaChecks(data);
-    expect(qa.issues.some((i) => i.code === "RELEASE_ITEM_LIMIT")).toBe(true);
+    expect(qa.issues.some((i) => i.code === "FEATURE_ITEM_LIMIT")).toBe(true);
   });
 
-  it("fails when releaseSection numbering is not sequential", () => {
+  it("fails when featureSection numbering is not sequential", () => {
     const data = baseNewsletter();
     data.blocks.push({
-      type: "releaseSection",
+      type: "featureSection",
       title: "Upcoming releases",
       disclaimer: "Preview visuals only.",
       items: [
@@ -193,13 +193,13 @@ describe("runQaChecks", () => {
     });
 
     const qa = runQaChecks(data);
-    expect(qa.issues.some((i) => i.code === "RELEASE_ITEM_NUMBER_SEQUENCE")).toBe(true);
+    expect(qa.issues.some((i) => i.code === "FEATURE_ITEM_NUMBER_SEQUENCE")).toBe(true);
   });
 
-  it("fails when releaseSection body is not short and scannable", () => {
+  it("fails when featureSection body is not short and scannable", () => {
     const data = baseNewsletter();
     data.blocks.push({
-      type: "releaseSection",
+      type: "featureSection",
       title: "Upcoming releases",
       disclaimer: "Preview visuals only.",
       items: [
@@ -214,14 +214,14 @@ describe("runQaChecks", () => {
 
     const qa = runQaChecks(data);
     expect(
-      qa.issues.some((i) => i.code === "RELEASE_ITEM_BODY_NOT_SCANNABLE")
+      qa.issues.some((i) => i.code === "FEATURE_ITEM_BODY_NOT_SCANNABLE")
     ).toBe(true);
   });
 
-  it("fails when releaseSection links are not labeled", () => {
+  it("fails when featureSection links are not labeled", () => {
     const data = baseNewsletter();
     data.blocks.push({
-      type: "releaseSection",
+      type: "featureSection",
       title: "Upcoming releases",
       disclaimer: "Preview visuals only.",
       items: [
@@ -241,6 +241,7 @@ describe("runQaChecks", () => {
     });
 
     const qa = runQaChecks(data);
-    expect(qa.issues.some((i) => i.code === "RELEASE_LINK_LABEL_MISSING")).toBe(true);
+    expect(qa.issues.some((i) => i.code === "FEATURE_LINK_LABEL_MISSING")).toBe(true);
   });
 });
+

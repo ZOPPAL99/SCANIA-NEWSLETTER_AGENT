@@ -12,6 +12,7 @@ All generated newsletter content must be validated by schema and QA before outpu
 
 ## Project Conventions
 - Keep newsletter data contract in `src/schemas/newsletter.ts` as the source of truth.
+- Keep internal section typing neutral (`featureSection`/`featureItem`), and use dynamic labels/titles in UI content.
 - Do not emit model-generated HTML directly; HTML must come from deterministic renderers only.
 - Prefer small, composable pure functions for parsing, rendering, and QA checks.
 - Keep strict typing; avoid `any` unless unavoidable and justified.

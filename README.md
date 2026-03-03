@@ -5,6 +5,7 @@ Schema-first newsletter generation with deterministic renderers and QA checks.
 ## Features
 
 - Strict JSON newsletter schema via Zod (`.strict()` objects).
+- Neutral internal content model (`featureSection` + `featureItem`) with dynamic section titles (for example: "Upcoming releases", "AI Highlights", "Focus areas").
 - Deterministic renderers:
   - Email HTML renderer (table-based, inline styles).
   - Web preview renderer (React SSR) with Tegel-aligned spacing/typography tokens in `src/render/web/tokens.ts`.

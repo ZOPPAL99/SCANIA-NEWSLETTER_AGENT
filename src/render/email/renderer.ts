@@ -100,8 +100,8 @@ function renderCards(block: Block): string {
   return `<tr><td style="padding:${space["space.2"]}px ${space["space.5"]}px;"><ul style="margin:0;padding-left:${space["space.4"]}px;color:${defaultEmailTheme.textColor};">${content}</ul></td></tr>`;
 }
 
-function renderReleaseSection(block: Block): string {
-  if (block.type !== "releaseSection") {
+function renderFeatureSection(block: Block): string {
+  if (block.type !== "featureSection") {
     return "";
   }
 
@@ -133,7 +133,7 @@ function renderBlock(block: Block): string {
   if (block.type === "hero" && block.title?.trim()) {
     chunks.push(renderTitle(block.title, 1));
   } else if (
-    block.type !== "releaseSection" &&
+    block.type !== "featureSection" &&
     "title" in block &&
     block.title?.trim()
   ) {
@@ -148,8 +148,8 @@ function renderBlock(block: Block): string {
   if (block.type === "cards") {
     chunks.push(renderCards(block));
   }
-  if (block.type === "releaseSection") {
-    chunks.push(renderReleaseSection(block));
+  if (block.type === "featureSection") {
+    chunks.push(renderFeatureSection(block));
   }
 
   if (block.type === "footer" && block.body?.trim()) {

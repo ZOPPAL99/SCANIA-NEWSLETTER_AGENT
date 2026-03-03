@@ -19,7 +19,7 @@
       "body": "Below you can review upcoming releases that focus on operational flow, transparency, and faster daily actions for dealer teams."
     },
     {
-      "type": "releaseSection",
+      "type": "featureSection",
       "title": "Upcoming releases",
       "disclaimer": "The images presented in this newsletter are from preliminary designs.\nMinor design and other changes can be expected...",
       "items": [
@@ -116,3 +116,4 @@
     "language": "en"
   }
 }
+

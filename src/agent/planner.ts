@@ -1,16 +1,16 @@
-export interface PlannedReleaseLink {
+export interface PlannedFeatureLink {
   label: string;
   href: string;
 }
 
-export interface PlannedReleaseItem {
+export interface PlannedFeatureItem {
   number: number;
   title: string;
   kicker: string;
   body: string;
   image?: string;
   alt?: string;
-  links: PlannedReleaseLink[];
+  links: PlannedFeatureLink[];
 }
 
 export interface PlanResult {
@@ -21,10 +21,10 @@ export interface PlanResult {
     intro: string;
     edition: string;
   };
-  releaseSection: {
+  featureSection: {
     title: string;
     disclaimer: string;
-    items: PlannedReleaseItem[];
+    items: PlannedFeatureItem[];
   };
   footer: {
     body: string;
@@ -81,8 +81,8 @@ function topLevelSections(markdown: string): Map<string, string> {
   return sections;
 }
 
-function parseLinks(value: string): PlannedReleaseLink[] {
-  const links: PlannedReleaseLink[] = [];
+function parseLinks(value: string): PlannedFeatureLink[] {
+  const links: PlannedFeatureLink[] = [];
   const markdownLinkPattern = /\[([^\]]+)\]\((https?:\/\/[^\s)]+)\)/g;
   let markdownMatch: RegExpExecArray | null = markdownLinkPattern.exec(value);
   while (markdownMatch) {
@@ -123,11 +123,11 @@ function parseLinks(value: string): PlannedReleaseLink[] {
   return links;
 }
 
-function parseReleaseItems(markdown: string): PlannedReleaseItem[] {
+function parseFeatureItems(markdown: string): PlannedFeatureItem[] {
   const lines = markdown.split(/\r?\n/);
-  const items: PlannedReleaseItem[] = [];
+  const items: PlannedFeatureItem[] = [];
   let inReleaseSection = false;
-  let active: PlannedReleaseItem | null = null;
+  let active: PlannedFeatureItem | null = null;
 
   const commit = (): void => {
     if (!active) {
@@ -215,7 +215,7 @@ export function planFromMarkdown(markdown: string): PlanResult {
   const intro = readSection(sections, "intro");
   const edition = readSection(sections, "edition");
   const disclaimer = readSection(sections, "disclaimer");
-  const releaseItems = parseReleaseItems(markdown);
+  const featureItems = parseFeatureItems(markdown);
 
   return {
     title,
@@ -225,10 +225,10 @@ export function planFromMarkdown(markdown: string): PlanResult {
       intro,
       edition,
     },
-    releaseSection: {
+    featureSection: {
       title: "Upcoming releases",
       disclaimer,
-      items: releaseItems,
+      items: featureItems,
     },
     footer: {
       body: "Add or remove blocks without changing renderer code paths; QA checks run before delivery artifacts are produced.",

@@ -30,11 +30,12 @@ Preview visuals only.
     expect(plan.header.subject).toBe("Digital Dealer Update");
     expect(plan.header.intro).toBe("Quick highlights for this sprint.");
     expect(plan.header.edition).toBe("March 2026");
-    expect(plan.releaseSection.title).toBe("Upcoming releases");
-    expect(plan.releaseSection.disclaimer).toBe("Preview visuals only.");
-    expect(plan.releaseSection.items).toHaveLength(1);
-    expect(plan.releaseSection.items[0].number).toBe(1);
-    expect(plan.releaseSection.items[0].title).toBe("Slot planner refresh");
-    expect(plan.releaseSection.items[0].links[0].label).toBe("Read notes");
+    expect(plan.featureSection.title).toBe("Upcoming releases");
+    expect(plan.featureSection.disclaimer).toBe("Preview visuals only.");
+    expect(plan.featureSection.items).toHaveLength(1);
+    expect(plan.featureSection.items[0].number).toBe(1);
+    expect(plan.featureSection.items[0].title).toBe("Slot planner refresh");
+    expect(plan.featureSection.items[0].links[0].label).toBe("Read notes");
   });
 });
+

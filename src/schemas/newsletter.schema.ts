@@ -5,7 +5,7 @@ import {
   type Block,
   type Cta,
   type Image,
-  type ReleaseItem,
+  type FeatureItem,
 } from "./newsletter.js";
 
 export interface ValidationIssue {
@@ -53,4 +53,4 @@ export function validateNewsletter(input: unknown): ValidationResult {
 }
 
 export { newsletterSchema };
-export type { Newsletter, Block, Cta, Image, ReleaseItem };
+export type { Newsletter, Block, Cta, Image, FeatureItem };

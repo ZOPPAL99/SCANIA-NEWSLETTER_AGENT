@@ -52,12 +52,12 @@ describe("NewsletterSchema", () => {
     ).toThrow();
   });
 
-  it("accepts releaseSection with required disclaimer and items", () => {
+  it("accepts featureSection with required disclaimer and items", () => {
     const result = NewsletterSchema.parse({
       subject: "Test",
       blocks: [
         {
-          type: "releaseSection",
+          type: "featureSection",
           title: "Upcoming releases",
           disclaimer: "Preliminary designs may change before release.",
           items: [
@@ -83,15 +83,15 @@ describe("NewsletterSchema", () => {
         },
       ],
     });
-    expect(result.blocks[0].type).toBe("releaseSection");
+    expect(result.blocks[0].type).toBe("featureSection");
   });
 
-  it("accepts releaseSection media with local assets path and assetId", () => {
+  it("accepts featureSection media with local assets path and assetId", () => {
     const result = NewsletterSchema.parse({
       subject: "Test",
       blocks: [
         {
-          type: "releaseSection",
+          type: "featureSection",
           title: "Upcoming releases",
           disclaimer: "Preliminary designs may change before release.",
           items: [
@@ -113,16 +113,16 @@ describe("NewsletterSchema", () => {
       ],
     });
 
-    expect(result.blocks[0].type).toBe("releaseSection");
+    expect(result.blocks[0].type).toBe("featureSection");
   });
 
-  it("rejects releaseSection media with unsupported src format", () => {
+  it("rejects featureSection media with unsupported src format", () => {
     expect(() =>
       NewsletterSchema.parse({
         subject: "Test",
         blocks: [
           {
-            type: "releaseSection",
+            type: "featureSection",
             title: "Upcoming releases",
             disclaimer: "Preliminary designs may change before release.",
             items: [
@@ -145,13 +145,13 @@ describe("NewsletterSchema", () => {
     ).toThrow();
   });
 
-  it("rejects releaseSection media entries with unsupported keys", () => {
+  it("rejects featureSection media entries with unsupported keys", () => {
     expect(() =>
       NewsletterSchema.parse({
         subject: "Test",
         blocks: [
           {
-            type: "releaseSection",
+            type: "featureSection",
             title: "Upcoming releases",
             disclaimer: "Preliminary designs may change before release.",
             items: [
@@ -164,7 +164,7 @@ describe("NewsletterSchema", () => {
                   {
                     src: "https://example.com/release.jpg",
                     alt: "Release screenshot",
-                    caption: "Not allowed for release media",
+                    caption: "Not allowed for feature media",
                   },
                 ],
               },
@@ -175,13 +175,13 @@ describe("NewsletterSchema", () => {
     ).toThrow();
   });
 
-  it("rejects releaseSection with more than 6 items", () => {
+  it("rejects featureSection with more than 6 items", () => {
     expect(() =>
       NewsletterSchema.parse({
         subject: "Test",
         blocks: [
           {
-            type: "releaseSection",
+            type: "featureSection",
             title: "Upcoming releases",
             disclaimer: "Preliminary designs may change before release.",
             items: Array.from({ length: 7 }, (_, index) => ({
@@ -196,13 +196,13 @@ describe("NewsletterSchema", () => {
     ).toThrow();
   });
 
-  it("rejects releaseSection links without labels", () => {
+  it("rejects featureSection links without labels", () => {
     expect(() =>
       NewsletterSchema.parse({
         subject: "Test",
         blocks: [
           {
-            type: "releaseSection",
+            type: "featureSection",
             title: "Upcoming releases",
             disclaimer: "Preliminary designs may change before release.",
             items: [
@@ -225,3 +225,4 @@ describe("NewsletterSchema", () => {
     ).toThrow();
   });
 });
+

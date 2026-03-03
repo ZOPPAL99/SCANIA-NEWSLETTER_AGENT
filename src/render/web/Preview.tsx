@@ -1,5 +1,5 @@
 import React from "react";
-import type { Block, Newsletter, ReleaseItem } from "../../schemas/newsletter.js";
+import type { Block, Newsletter, FeatureItem } from "../../schemas/newsletter.js";
 import { brandLogo, brandTypography } from "../brand/theme.js";
 import { tokens } from "./tokens.js";
 
@@ -74,7 +74,7 @@ function renderCards(items: unknown[]): React.ReactNode {
   );
 }
 
-function renderReleaseItems(items: ReleaseItem[]): React.ReactNode {
+function renderFeatureItems(items: FeatureItem[]): React.ReactNode {
   if (items.length === 0) {
     return null;
   }
@@ -113,7 +113,7 @@ function renderBlock(block: Block, key: string): React.ReactNode {
   const title =
     block.type === "hero" && block.title ? (
       <h1 key={`${key}-title`}>{block.title}</h1>
-    ) : "title" in block && block.type !== "releaseSection" && block.title ? (
+    ) : "title" in block && block.type !== "featureSection" && block.title ? (
       <h2 key={`${key}-title`}>{block.title}</h2>
     ) : null;
 
@@ -131,12 +131,12 @@ function renderBlock(block: Block, key: string): React.ReactNode {
       : null;
 
   const cards = block.type === "cards" ? renderCards(block.items ?? []) : null;
-  const releaseSection =
-    block.type === "releaseSection" ? (
+  const featureSection =
+    block.type === "featureSection" ? (
       <>
         <h2>{block.title}</h2>
         <p className="release-disclaimer">{block.disclaimer}</p>
-        {renderReleaseItems(block.items)}
+        {renderFeatureItems(block.items)}
       </>
     ) : null;
 
@@ -156,7 +156,7 @@ function renderBlock(block: Block, key: string): React.ReactNode {
       {body}
       {images}
       {cards}
-      {releaseSection}
+      {featureSection}
       {ctas}
     </section>
   );

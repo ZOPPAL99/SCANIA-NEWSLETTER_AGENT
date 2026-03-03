@@ -100,7 +100,7 @@ app.post("/api/validate", (req, res) => {
 function collectRelativeAssets(newsletter: Newsletter): string[] {
   const relativePaths = new Set<string>();
   for (const block of newsletter.blocks) {
-    if (block.type === "releaseSection") {
+    if (block.type === "featureSection") {
       for (const item of block.items) {
         for (const media of item.media ?? []) {
           if (media.src.startsWith("assets/")) {

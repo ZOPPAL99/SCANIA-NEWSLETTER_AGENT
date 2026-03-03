@@ -24,6 +24,7 @@ type ReleaseDraft = {
 type FormState = {
   subject: string;
   preheader: string;
+  heroTitle: string;
   edition: string;
   intro: string;
   disclaimer: string;
@@ -67,6 +68,7 @@ const EMPTY_RELEASE: ReleaseDraft = {
 const INITIAL_FORM: FormState = {
   subject: "Welcome to your Digital Dealer update!",
   preheader: "Upcoming releases and progress highlights.",
+  heroTitle: "",
   edition: "March 2026",
   intro: "This edition summarizes upcoming product improvements and near-term release plans.",
   disclaimer: DEFAULT_DISCLAIMER,
@@ -138,10 +140,10 @@ function issueFieldKey(issue: Issue): string | null {
     return "footerText";
   }
 
-  if (issue.code === "RELEASE_SECTION_DISCLAIMER_MISSING") {
+  if (issue.code === "FEATURE_SECTION_DISCLAIMER_MISSING") {
     return "disclaimer";
   }
-  if (issue.code === "RELEASE_SECTION_TITLE_MISSING") {
+  if (issue.code === "FEATURE_SECTION_TITLE_MISSING") {
     return "subject";
   }
   if (issue.code === "CTA_MISSING" || issue.code === "CTA_TEXT_LENGTH" || issue.code === "CTA_VERB_FIRST") {
@@ -152,6 +154,11 @@ function issueFieldKey(issue: Issue): string | null {
 
 function buildNewsletter(state: FormState): Record<string, unknown> {
   const footerLinks = parseLinks(state.footerLinksText);
+  const heroTitle = state.heroTitle.trim()
+    ? state.heroTitle.trim()
+    : state.edition.trim()
+      ? `${state.edition.trim()} highlights`
+      : "Edition highlights";
   const releaseItems = state.releases.map((release, index) => ({
     number: index + 1,
     title: release.title,
@@ -182,7 +189,7 @@ function buildNewsletter(state: FormState): Record<string, unknown> {
     blocks: [
       {
         type: "hero",
-        title: state.subject,
+        title: heroTitle,
         body: `${state.intro.trim()}${state.edition.trim() ? `\nEdition: ${state.edition.trim()}` : ""}`,
         ctas: [
           {
@@ -192,7 +199,7 @@ function buildNewsletter(state: FormState): Record<string, unknown> {
         ],
       },
       {
-        type: "releaseSection",
+        type: "featureSection",
         title: "Upcoming releases",
         disclaimer: state.disclaimer,
         items: releaseItems,
@@ -448,6 +455,21 @@ export function App(): JSX.Element {
                 />
                 <p className="hint">Lead with a clear action or outcome.</p>
               </label>
+              <label>
+                Hero title (optional)
+                <input
+                  ref={registerField("heroTitle")}
+                  value={form.heroTitle}
+                  onChange={(event) =>
+                    setForm((prev) => ({ ...prev, heroTitle: event.target.value }))
+                  }
+                />
+                <p className="hint">
+                  If empty, defaults to <code>&lt;Edition&gt; highlights</code>.
+                </p>
+              </label>
+            </div>
+            <div className="grid two">
               <label>
                 Preheader
                 <input
