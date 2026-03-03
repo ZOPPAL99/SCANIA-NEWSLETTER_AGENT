@@ -1,6 +1,13 @@
 import { z } from "zod";
 export const MAX_RELEASE_ITEMS = 6;
 
+function isUrlOrLocalAssetPath(value: string): boolean {
+  if (/^https?:\/\//i.test(value)) {
+    return true;
+  }
+  return /^assets\/[A-Za-z0-9._/-]+$/.test(value);
+}
+
 export const imageSchema = z
   .object({
     src: z.string().url(),
@@ -18,8 +25,11 @@ export const ctaSchema = z
 
 export const releaseMediaSchema = z
   .object({
-    src: z.string().url(),
-    alt: z.string().min(1),
+    src: z.string().refine(isUrlOrLocalAssetPath, {
+      message: "Expected an http(s) URL or local assets/<filename> path.",
+    }),
+    alt: z.string(),
+    assetId: z.string().min(1).optional(),
   })
   .strict();
 

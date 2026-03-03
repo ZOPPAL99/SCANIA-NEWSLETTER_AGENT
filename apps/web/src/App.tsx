@@ -12,6 +12,11 @@ type ReleaseDraft = {
   kicker: string;
   body: string;
   imageUrl: string;
+  assetId: string;
+  relativePath: string;
+  uploadFilename: string;
+  uploadError?: string;
+  isUploading?: boolean;
   alt: string;
   linksText: string;
 };
@@ -22,6 +27,7 @@ type FormState = {
   edition: string;
   intro: string;
   disclaimer: string;
+  publishMode: "preview/local" | "outlook-cid";
   footerText: string;
   footerLinksText: string;
   releases: ReleaseDraft[];
@@ -36,6 +42,9 @@ type ValidateResponse = {
 type GenerateResponse = {
   ok: boolean;
   issues: Issue[];
+  message?: string;
+  publishMode?: "preview/local" | "outlook-cid";
+  uploadedAssets?: string[];
   previewUrl?: string;
   files?: Record<string, string>;
 };
@@ -48,6 +57,9 @@ const EMPTY_RELEASE: ReleaseDraft = {
   kicker: "",
   body: "",
   imageUrl: "",
+  assetId: "",
+  relativePath: "",
+  uploadFilename: "",
   alt: "",
   linksText: "",
 };
@@ -58,6 +70,7 @@ const INITIAL_FORM: FormState = {
   edition: "March 2026",
   intro: "This edition summarizes upcoming product improvements and near-term release plans.",
   disclaimer: DEFAULT_DISCLAIMER,
+  publishMode: "preview/local",
   footerText:
     "Add or remove blocks without changing renderer code paths; QA checks run before delivery artifacts are produced.",
   footerLinksText: "Open preview | http://localhost:3333/dist/preview.html",
@@ -144,8 +157,14 @@ function buildNewsletter(state: FormState): Record<string, unknown> {
     title: release.title,
     kicker: release.kicker,
     body: release.body,
-    media: release.imageUrl
-      ? [{ src: release.imageUrl, alt: release.alt || "" }]
+    media: (release.relativePath || release.imageUrl)
+      ? [
+          {
+            src: release.relativePath || release.imageUrl,
+            alt: release.alt || "",
+            assetId: release.assetId || undefined,
+          },
+        ]
       : undefined,
     links: parseLinks(release.linksText),
   }));
@@ -264,7 +283,10 @@ export function App(): JSX.Element {
       const response = await fetch("http://localhost:3333/api/generate", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: payloadText,
+        body: JSON.stringify({
+          newsletter: payload,
+          publishMode: form.publishMode,
+        }),
       });
       const data = (await response.json()) as GenerateResponse;
       setGenerateResult(data);
@@ -294,6 +316,63 @@ export function App(): JSX.Element {
       releases[index] = { ...releases[index], [field]: value };
       return { ...current, releases };
     });
+  }
+
+  async function uploadReleaseImage(index: number, file: File): Promise<void> {
+    setForm((current) => {
+      const releases = [...current.releases];
+      releases[index] = {
+        ...releases[index],
+        isUploading: true,
+        uploadError: "",
+      };
+      return { ...current, releases };
+    });
+
+    try {
+      const formData = new FormData();
+      formData.append("image", file);
+      const response = await fetch("http://localhost:3333/api/upload", {
+        method: "POST",
+        body: formData,
+      });
+      const data = (await response.json()) as {
+        ok?: boolean;
+        assetId?: string;
+        filename?: string;
+        relativePath?: string;
+        message?: string;
+      };
+
+      if (!response.ok || !data.ok || !data.relativePath || !data.assetId) {
+        throw new Error(data.message || "Upload failed.");
+      }
+
+      setForm((current) => {
+        const releases = [...current.releases];
+        releases[index] = {
+          ...releases[index],
+          isUploading: false,
+          uploadError: "",
+          assetId: data.assetId ?? "",
+          relativePath: data.relativePath ?? "",
+          uploadFilename: data.filename ?? "",
+          imageUrl: data.relativePath ?? releases[index].imageUrl,
+        };
+        return { ...current, releases };
+      });
+    } catch (error: unknown) {
+      const message = error instanceof Error ? error.message : "Upload failed.";
+      setForm((current) => {
+        const releases = [...current.releases];
+        releases[index] = {
+          ...releases[index],
+          isUploading: false,
+          uploadError: message,
+        };
+        return { ...current, releases };
+      });
+    }
   }
 
   function removeRelease(index: number): void {
@@ -382,6 +461,24 @@ export function App(): JSX.Element {
               </label>
             </div>
             <div className="grid two">
+              <label>
+                Publish mode
+                <select
+                  value={form.publishMode}
+                  onChange={(event) =>
+                    setForm((prev) => ({
+                      ...prev,
+                      publishMode: event.target.value as FormState["publishMode"],
+                    }))
+                  }
+                >
+                  <option value="preview/local">preview/local</option>
+                  <option value="outlook-cid">outlook-cid</option>
+                </select>
+                <p className="hint">
+                  `outlook-cid` is TODO for MVP. Use `preview/local` for asset rendering.
+                </p>
+              </label>
               <label>
                 Edition
                 <input
@@ -511,17 +608,54 @@ export function App(): JSX.Element {
                         updateRelease(index, "imageUrl", event.target.value)
                       }
                     />
-                    <p className="hint">Use an absolute URL if media is included.</p>
+                    <p className="hint">
+                      Use absolute URL or uploaded <code>assets/&lt;filename&gt;</code> path.
+                    </p>
                   </label>
+                  <label>
+                    Upload image (png/jpg)
+                    <input
+                      type="file"
+                      accept="image/png,image/jpeg"
+                      onChange={(event) => {
+                        const file = event.target.files?.[0];
+                        if (file) {
+                          void uploadReleaseImage(index, file);
+                        }
+                      }}
+                    />
+                    <p className="hint">
+                      {release.isUploading
+                        ? "Uploading..."
+                        : release.uploadFilename
+                          ? `Uploaded: ${release.uploadFilename}`
+                          : "Upload to /api/upload and store local relative path."}
+                    </p>
+                    {release.uploadError ? (
+                      <p className="error">{release.uploadError}</p>
+                    ) : null}
+                  </label>
+                </div>
+                <div className="grid two">
                   <label>
                     Alt text
                     <input
                       ref={registerField(`release-${index}-alt`)}
-                      className={release.imageUrl.trim() && !release.alt.trim() ? "invalid" : ""}
+                      className={
+                        (release.relativePath.trim() || release.imageUrl.trim()) &&
+                        !release.alt.trim()
+                          ? "invalid"
+                          : ""
+                      }
                       value={release.alt}
                       onChange={(event) => updateRelease(index, "alt", event.target.value)}
                     />
-                    <p className="hint">Describe what is visible in the image.</p>
+                    <p className="hint">Editable field. Leave empty for now if unknown.</p>
+                  </label>
+                  <label>
+                    Asset path
+                    <input value={release.relativePath} readOnly />
+                    <p className="hint">Saved in media.src for local preview mode.</p>
                   </label>
                 </div>
                 <label>
@@ -610,6 +744,7 @@ export function App(): JSX.Element {
             {generateResult ? (
               <p className={generateResult.ok ? "ok" : "error"}>
                 {generateResult.ok ? "Artifacts written to ./dist." : "Generate failed."}
+                {generateResult.message ? ` ${generateResult.message}` : ""}
                 {generateResult.previewUrl ? (
                   <>
                     {" "}

@@ -83,12 +83,18 @@ npm.cmd run dev
 The homepage posts newsletter JSON to the local server:
 
 - `POST /api/validate`: returns live QA (`ok` + `issues`) and preview HTML.
+- `POST /api/upload`: accepts multipart image upload (`png/jpg/jpeg`), saves to `dist/assets`, and returns `{ assetId, filename, relativePath }`.
 - `POST /api/generate`: validates, runs QA, renders artifacts, and writes:
   - `dist/newsletter.json`
   - `dist/email.html`
   - `dist/preview.html`
   - `dist/qa-report.md`
 - QA issues in the UI provide contextual `Quick fix` actions that scroll/focus mapped authoring fields.
+
+Publish mode selector:
+
+- `preview/local`: renders uploaded images using local `assets/<filename>` relative paths.
+- `outlook-cid`: TODO for MVP (planned `.eml` output with CID attachments).
 
 Production-style web build:
 

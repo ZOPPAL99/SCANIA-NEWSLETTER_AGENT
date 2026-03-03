@@ -86,6 +86,65 @@ describe("NewsletterSchema", () => {
     expect(result.blocks[0].type).toBe("releaseSection");
   });
 
+  it("accepts releaseSection media with local assets path and assetId", () => {
+    const result = NewsletterSchema.parse({
+      subject: "Test",
+      blocks: [
+        {
+          type: "releaseSection",
+          title: "Upcoming releases",
+          disclaimer: "Preliminary designs may change before release.",
+          items: [
+            {
+              number: 1,
+              title: "Local image release",
+              kicker: "Kicker",
+              body: "Body",
+              media: [
+                {
+                  src: "assets/release-123.png",
+                  alt: "",
+                  assetId: "release-123",
+                },
+              ],
+            },
+          ],
+        },
+      ],
+    });
+
+    expect(result.blocks[0].type).toBe("releaseSection");
+  });
+
+  it("rejects releaseSection media with unsupported src format", () => {
+    expect(() =>
+      NewsletterSchema.parse({
+        subject: "Test",
+        blocks: [
+          {
+            type: "releaseSection",
+            title: "Upcoming releases",
+            disclaimer: "Preliminary designs may change before release.",
+            items: [
+              {
+                number: 1,
+                title: "Item 1",
+                kicker: "Kicker",
+                body: "Body",
+                media: [
+                  {
+                    src: "relative/path/image.png",
+                    alt: "",
+                  },
+                ],
+              },
+            ],
+          },
+        ],
+      }),
+    ).toThrow();
+  });
+
   it("rejects releaseSection media entries with unsupported keys", () => {
     expect(() =>
       NewsletterSchema.parse({

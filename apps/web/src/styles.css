@@ -170,6 +170,7 @@ label {
 }
 
 input,
+select,
 textarea {
   width: 100%;
   border: 1px solid #b8cad8;
@@ -182,6 +183,7 @@ textarea {
 }
 
 input:focus,
+select:focus,
 textarea:focus {
   outline: 2px solid rgba(0, 87, 159, 0.2);
   border-color: var(--secondary);
