@@ -5,6 +5,8 @@
   "description": "Schema-first newsletter creation agent with deterministic renderers and QA checks.",
   "type": "module",
   "scripts": {
+    "cycle:guide": "powershell -NoProfile -Command \"Get-Content -Raw tasks/agent-centric-development-cycle.md\"",
+    "cycle:verify": "npm.cmd run typecheck && npm.cmd test -- --run && npm.cmd run generate -- --input examples/input.md --out dist",
     "dev": "concurrently \"npm.cmd run -s dev:server\" \"npm.cmd run -s dev:web\"",
     "dev:server": "tsx watch apps/server/src/index.ts",
     "dev:web": "vite --config apps/web/vite.config.ts --host 127.0.0.1 --port 5173",

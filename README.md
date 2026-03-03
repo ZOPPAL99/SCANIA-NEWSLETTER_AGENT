@@ -115,6 +115,28 @@ Static prompt assets are stored under `prompts/`:
 
 Rule: keep static sections first and dynamic user input last. For real OpenAI integration, pass ordered `messages` exactly in this sequence.
 
+## Agent-Centric Development Cycle
+
+This repository uses an explicit implementation cycle for agent-driven delivery.
+
+Cycle guide:
+
+- `tasks/agent-centric-development-cycle.md`
+
+Task planning templates:
+
+- `tasks/todo.template.md`
+- `tasks/lessons.md` (entry template included in file)
+
+Convenience commands:
+
+```powershell
+npm.cmd run cycle:guide
+npm.cmd run cycle:verify
+```
+
+`cycle:verify` runs the required merge-gate checks in sequence.
+
 ## Tests
 
 ```powershell
