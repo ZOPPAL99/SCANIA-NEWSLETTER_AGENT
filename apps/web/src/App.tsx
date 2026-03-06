@@ -50,6 +50,8 @@ type GenerateResponse = {
   files?: Record<string, string>;
 };
 
+type SectionId = "briefing" | "policy" | "releases" | "footer";
+
 const DEFAULT_DISCLAIMER =
   "The images presented in this newsletter are from preliminary designs.\nMinor design and other changes can be expected.";
 
@@ -78,6 +80,38 @@ const INITIAL_FORM: FormState = {
   footerLinksText: "Open preview | http://localhost:3333/dist/preview.html",
   releases: [{ ...EMPTY_RELEASE }],
 };
+
+const SECTION_ORDER: Array<{
+  id: SectionId;
+  step: string;
+  title: string;
+  description: string;
+}> = [
+  {
+    id: "briefing",
+    step: "Step 1",
+    title: "Header briefing",
+    description: "Set the familiar inbox basics first: subject, preheader, edition, and intro.",
+  },
+  {
+    id: "policy",
+    step: "Step 2",
+    title: "Release section policy",
+    description: "Keep shared guidance in one place so every release card follows the same rules.",
+  },
+  {
+    id: "releases",
+    step: "Step 3",
+    title: "Upcoming releases",
+    description: "Build each release in the same sequence: message, media, then links.",
+  },
+  {
+    id: "footer",
+    step: "Step 4",
+    title: "Footer and navigation links",
+    description: "Finish with next steps and clearly labeled destinations.",
+  },
+];
 
 function parseLinks(raw: string): Array<{ label: string; href: string }> {
   const links: Array<{ label: string; href: string }> = [];
@@ -227,6 +261,8 @@ export function App(): JSX.Element {
   const payloadText = useMemo(() => JSON.stringify(payload), [payload]);
   const introWords = wordCount(form.intro);
   const releaseCount = form.releases.length;
+  const errorCount = qa.issues.filter((issue) => issue.severity === "error").length;
+  const warningCount = qa.issues.filter((issue) => issue.severity === "warning").length;
   const requiredCount = useMemo(() => {
     let done = 0;
     if (form.subject.trim()) {
@@ -249,6 +285,26 @@ export function App(): JSX.Element {
     return done;
   }, [form]);
   const requiredTotal = 2 + form.releases.length * 3;
+  const releaseSummaries = useMemo(
+    () =>
+      form.releases.map((release) => {
+        const fields = [
+          release.title,
+          release.kicker,
+          release.body,
+          release.alt,
+          release.linksText,
+        ];
+        const filled = fields.filter((value) => value.trim()).length;
+        return {
+          filled,
+          total: fields.length,
+          hasMedia: Boolean(release.relativePath.trim() || release.imageUrl.trim()),
+          words: wordCount(release.body),
+        };
+      }),
+    [form.releases],
+  );
 
   useEffect(() => {
     const timer = setTimeout(async () => {
@@ -427,7 +483,7 @@ export function App(): JSX.Element {
           </p>
         </div>
         <aside className="hero-stat">
-          <p>Required fields</p>
+          <p>Completion</p>
           <strong>
             {requiredCount} / {requiredTotal}
           </strong>
@@ -435,13 +491,53 @@ export function App(): JSX.Element {
         </aside>
       </header>
 
+      <section className="command-bar" aria-label="Editor progress and navigation">
+        <div className="command-summary">
+          <div className="summary-chip">
+            <span className="summary-label">QA</span>
+            <strong>{qa.ok ? "Ready" : "Needs fixes"}</strong>
+          </div>
+          <div className="summary-chip">
+            <span className="summary-label">Errors</span>
+            <strong>{errorCount}</strong>
+          </div>
+          <div className="summary-chip">
+            <span className="summary-label">Warnings</span>
+            <strong>{warningCount}</strong>
+          </div>
+          <div className="summary-chip">
+            <span className="summary-label">Mode</span>
+            <strong>{form.publishMode}</strong>
+          </div>
+        </div>
+        <nav className="step-nav" aria-label="Step navigation">
+          {SECTION_ORDER.map((section) => (
+            <a key={section.id} className="step-link" href={`#${section.id}`}>
+              <span>{section.step}</span>
+              <strong>{section.title}</strong>
+            </a>
+          ))}
+        </nav>
+      </section>
+
       <section className="workspace">
         <div className="composer">
-          <article className="stage">
+          <article id="briefing" className="stage">
             <header>
               <p className="stage-kicker">Step 1</p>
               <h2>Header briefing</h2>
+              <p className="stage-summary">{SECTION_ORDER[0].description}</p>
             </header>
+            <div className="stage-intro">
+              <div className="mini-card">
+                <span className="mini-label">Inbox clarity</span>
+                <strong>One subject, one preheader, one promise</strong>
+              </div>
+              <div className="mini-card">
+                <span className="mini-label">Intro length</span>
+                <strong>{introWords} words</strong>
+              </div>
+            </div>
             <div className="grid two">
               <label>
                 Subject *
@@ -512,6 +608,8 @@ export function App(): JSX.Element {
                 />
                 <p className="hint">Example: March 2026.</p>
               </label>
+            </div>
+            <div className="grid">
               <label>
                 Intro *
                 <textarea
@@ -529,11 +627,18 @@ export function App(): JSX.Element {
             </div>
           </article>
 
-          <article className="stage">
+          <article id="policy" className="stage">
             <header>
               <p className="stage-kicker">Step 2</p>
               <h2>Release section policy</h2>
+              <p className="stage-summary">{SECTION_ORDER[1].description}</p>
             </header>
+            <div className="stage-intro">
+              <div className="mini-card">
+                <span className="mini-label">Shared rule</span>
+                <strong>One reusable disclaimer for every release</strong>
+              </div>
+            </div>
             <label>
               Disclaimer
               <textarea
@@ -547,11 +652,12 @@ export function App(): JSX.Element {
             </label>
           </article>
 
-          <article className="stage">
+          <article id="releases" className="stage">
             <header className="release-top">
               <div>
                 <p className="stage-kicker">Step 3</p>
                 <h2>Upcoming releases</h2>
+                <p className="stage-summary">{SECTION_ORDER[2].description}</p>
               </div>
               <button
                 type="button"
@@ -567,11 +673,28 @@ export function App(): JSX.Element {
                 Add release
               </button>
             </header>
+            <div className="release-overview">
+              <div className="mini-card">
+                <span className="mini-label">Recommended count</span>
+                <strong>1 to 3 release cards</strong>
+              </div>
+              <div className="mini-card">
+                <span className="mini-label">Configured</span>
+                <strong>{releaseCount} cards</strong>
+              </div>
+            </div>
 
             {form.releases.map((release, index) => (
               <article className="release-card" key={index}>
                 <header className="release-headline">
-                  <h3>Release {index + 1}</h3>
+                  <div>
+                    <h3>Release {index + 1}</h3>
+                    <p className="release-meta">
+                      {releaseSummaries[index].filled} of {releaseSummaries[index].total} key
+                      fields filled
+                      {releaseSummaries[index].hasMedia ? " | media attached" : ""}
+                    </p>
+                  </div>
                   <button
                     type="button"
                     className="ghost"
@@ -581,6 +704,11 @@ export function App(): JSX.Element {
                     Remove
                   </button>
                 </header>
+                <section className="release-group">
+                  <div className="group-heading">
+                    <h4>Message</h4>
+                    <p>Lead with the release name, promise, and short explanation.</p>
+                  </div>
                 <div className="grid two">
                   <label>
                     Title
@@ -620,6 +748,12 @@ export function App(): JSX.Element {
                     {wordCount(release.body)} words.
                   </p>
                 </label>
+                </section>
+                <section className="release-group">
+                  <div className="group-heading">
+                    <h4>Media</h4>
+                    <p>Use one image path and a meaningful alt description when media is present.</p>
+                  </div>
                 <div className="grid two">
                   <label>
                     Image URL
@@ -680,6 +814,12 @@ export function App(): JSX.Element {
                     <p className="hint">Saved in media.src for local preview mode.</p>
                   </label>
                 </div>
+                </section>
+                <section className="release-group">
+                  <div className="group-heading">
+                    <h4>Links</h4>
+                    <p>Keep choices limited to the most important next action for the reader.</p>
+                  </div>
                 <label>
                   Links (one per line: Label | URL)
                   <textarea
@@ -691,15 +831,23 @@ export function App(): JSX.Element {
                   />
                   <p className="hint">Use explicit labels, e.g. Read release notes | https://...</p>
                 </label>
+                </section>
               </article>
             ))}
           </article>
 
-          <article className="stage">
+          <article id="footer" className="stage">
             <header>
               <p className="stage-kicker">Step 4</p>
               <h2>Footer and navigation links</h2>
+              <p className="stage-summary">{SECTION_ORDER[3].description}</p>
             </header>
+            <div className="stage-intro">
+              <div className="mini-card">
+                <span className="mini-label">Link rule</span>
+                <strong>Every destination needs visible text</strong>
+              </div>
+            </div>
             <div className="grid two">
               <label>
                 Footer text
@@ -732,10 +880,18 @@ export function App(): JSX.Element {
             <header>
               <p className="stage-kicker">Live QA</p>
               <h2>{validating ? "Checking..." : "Validation status"}</h2>
+              <p className="stage-summary">
+                Review issues in one place, then jump directly to the affected field.
+              </p>
             </header>
-            <p className={qa.ok ? "ok" : "error"}>
-              {qa.ok ? "PASS" : "FAIL"} - {qa.issues.length} issue(s)
-            </p>
+            <div className="qa-banner">
+              <p className={qa.ok ? "ok" : "error"}>
+                {qa.ok ? "PASS" : "FAIL"} - {qa.issues.length} issue(s)
+              </p>
+              <button type="button" onClick={onGenerate} disabled={generating}>
+                {generating ? "Generating..." : "Generate artifacts"}
+              </button>
+            </div>
             <ul className="issues">
               {qa.issues.map((issue, index) => (
                 <li key={`${issue.code}-${index}`} className={issue.severity}>
@@ -760,9 +916,6 @@ export function App(): JSX.Element {
             {qa.issues.length === 0 ? (
               <p className="hint">No issues detected. Safe to generate artifacts.</p>
             ) : null}
-            <button type="button" onClick={onGenerate} disabled={generating}>
-              {generating ? "Generating..." : "Generate"}
-            </button>
             {generateResult ? (
               <p className={generateResult.ok ? "ok" : "error"}>
                 {generateResult.ok ? "Artifacts written to ./dist." : "Generate failed."}

@@ -92,6 +92,14 @@ The homepage posts newsletter JSON to the local server:
   - `dist/qa-report.md`
 - QA issues in the UI provide contextual `Quick fix` actions that scroll/focus mapped authoring fields.
 
+Authoring UX highlights:
+
+- Four-step editor flow with anchor navigation for a familiar top-level layout.
+- Summary chips for QA state, error count, warning count, and publish mode.
+- Release cards chunked into `Message`, `Media`, and `Links` groups to reduce scan load.
+- Larger primary actions and field controls for easier pointer and touch targeting.
+- Sticky QA panel with a single primary artifact-generation action beside validation status.
+
 Publish mode selector:
 
 - `preview/local`: renders uploaded images using local `assets/<filename>` relative paths.
